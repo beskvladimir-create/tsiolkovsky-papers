@@ -19,3 +19,6 @@ catalog.csv.bak
 
 # macOS
 .DS_Store
+
+# Производные метрики: пересчитываются classify_pages.py за 100 секунд
+page_metrics.csv
