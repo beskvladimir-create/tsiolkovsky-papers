@@ -17,6 +17,7 @@
 Одна закачка за раз (без параллельных запросов) — это государственный портал.
 """
 import csv
+import http.client
 import os
 import random
 import re
@@ -61,6 +62,13 @@ def fetch(url, binary=False, retries=10):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return None  # объекта нет — не ретраим
+            last = e
+        except http.client.IncompleteRead as e:
+            # обрыв на крупном файле: повторять целиком бесполезно, сервер
+            # обрежет и следующий ответ. Пусть вызывающий идёт в fetch_chunked.
+            if binary:
+                sys.stderr.write(f"  ~ обрыв на {url}, беру по частям\n")
+                return None
             last = e
         except Exception as e:
             last = e
