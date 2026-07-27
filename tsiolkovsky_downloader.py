@@ -39,14 +39,18 @@ OPIS_NAME = {1: "Опись 1", 2: "Опись 1А", 3: "Опись 2", 4: "Оп
 JPEG_SOI = b"\xff\xd8\xff"
 
 
+def qurl(url):
+    """Дела с буквенным номером (555\\1_145а) приходят из HTML с кириллицей в
+    пути; urllib кодирует URL в ascii и падает, поэтому квотим сами. % в safe,
+    чтобы уже готовый %5C не закодировался повторно."""
+    return urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=%~")
+
+
 def fetch(url, binary=False, retries=10):
     """GET c ретраями. Сервер РАН нестабилен: ~треть запросов падает в 500,
     но со следующей попытки отдаёт целый файл. Поэтому 500/сеть ретраим упорно,
     только 404 = реального объекта нет."""
-    # дела с буквенным номером (555\1_145а) приходят из HTML с кириллицей в пути;
-    # urllib кодирует URL в ascii и падает, поэтому квотим сами. % в safe, чтобы
-    # уже готовый %5C не закодировался повторно.
-    url = urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=%~")
+    url = qurl(url)
     last = None
     for attempt in range(retries):
         try:
@@ -64,6 +68,52 @@ def fetch(url, binary=False, retries=10):
         time.sleep(min(1.0 + attempt * 0.7, 6.0) + random.uniform(0, 0.5))
     sys.stderr.write(f"  ! не удалось получить {url}: {last}\n")
     return None
+
+
+CHUNK = 100_000  # ниже порога, на котором сервер обрывает ответ (~130 КБ)
+
+
+def fetch_chunked(url, retries=6):
+    """Докачка крупного файла по частям.
+
+    Сервер РАН обрывает большие ответы примерно на 130 КБ: мелкие сканы
+    приходят целиком, а листы по 800 КБ падают в IncompleteRead сколько ни
+    повторяй. При этом сервер отдаёт Accept-Ranges: bytes, поэтому берём файл
+    кусками ниже порога обрыва и склеиваем. Возвращает bytes или None.
+    """
+    url = qurl(url)
+    buf, total = b"", None
+    # HEAD отдельным запросом не делаем: сервер сыпет 500 примерно на трети
+    # обращений, и лишняя точка отказа роняет всю докачку. Полный размер
+    # приходит в Content-Range первого же куска.
+    while total is None or len(buf) < total:
+        end = len(buf) + CHUNK - 1
+        for attempt in range(retries):
+            try:
+                req = urllib.request.Request(url, headers={
+                    "User-Agent": UA, "Range": f"bytes={len(buf)}-{end}"})
+                with urllib.request.urlopen(req, timeout=40) as r:
+                    part = r.read()
+                    status = r.status
+                    m = re.match(r"bytes\s+\d+-\d+/(\d+)",
+                                 r.headers.get("Content-Range", ""))
+                if status != 206 or not m:
+                    return None  # Range не поддержан для этого объекта
+                total = int(m.group(1))
+                if part:
+                    buf += part
+                    break
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return None
+            except Exception:
+                pass
+            time.sleep(min(1.0 + attempt * 0.7, 5.0) + random.uniform(0, 0.4))
+        else:
+            sys.stderr.write(f"  ! кусок {len(buf)}-{end} не взялся: {url}\n")
+            return None
+        time.sleep(random.uniform(0.15, 0.35))
+    return buf
 
 
 # пауза между запросами; переопределяется из --delay
@@ -150,7 +200,11 @@ def download_delo(opis, delo_id):
             page += 1
             continue
 
-        blob = fetch(url, binary=True)
+        # три обычные попытки, потом докачка по частям: на крупных сканах
+        # сервер режет ответ всегда, и повторять целиком бессмысленно
+        blob = fetch(url, binary=True, retries=3)
+        if not blob:
+            blob = fetch_chunked(url)
         polite_sleep()
         if not blob:
             if from_template:
