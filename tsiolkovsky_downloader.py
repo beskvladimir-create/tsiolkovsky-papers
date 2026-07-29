@@ -253,13 +253,39 @@ def load_done_catalog():
     return done
 
 
+FIELDS = ["opis", "opis_page", "delo", "name", "pages", "expected", "status"]
+
+
 def append_catalog(row):
-    new = not os.path.exists(CATALOG)
-    with open(CATALOG, "a", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["opis", "opis_page", "delo", "name", "pages", "expected", "status"])
-        if new:
-            w.writeheader()
-        w.writerow(row)
+    """Записывает дело в каталог, заменяя прежнюю строку, если она уже есть.
+
+    Раньше строка просто дописывалась в конец. Неполные дела перекачиваются при
+    каждом перезапуске, и каждый перезапуск плодил дубль: за пять рестартов
+    накопилось 20 лишних строк, а каталог завышал число листов. Пишем через
+    временный файл и os.replace, потому что процесс регулярно убивают при
+    засыпании ноутбука и оборванная запись испортила бы каталог.
+    """
+    rows = []
+    if os.path.exists(CATALOG):
+        with open(CATALOG, encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+
+    key = (str(row["opis_page"]), str(row["delo"]))
+    clean = {k: row.get(k, "") for k in FIELDS}
+    for i, r in enumerate(rows):
+        if (r.get("opis_page"), r.get("delo")) == key:
+            rows[i] = clean
+            break
+    else:
+        rows.append(clean)
+
+    tmp = CATALOG + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in FIELDS})
+    os.replace(tmp, CATALOG)
 
 
 def run_opis(opis, id_from, id_to, miss_stop):
