@@ -12,7 +12,7 @@
 cd "$(dirname "$0")" || exit 1
 echo $$ > .keeper_pid
 
-ARGS="--full --to 2000 --miss-stop 40 --delay 0.3 0.6"
+ARGS="--to 2200 --miss-stop 60 --delay 0.3 0.6"
 log() { echo "$(date '+%F %T') $*"; }
 
 log "сторож запущен, проверка каждые 120 с"

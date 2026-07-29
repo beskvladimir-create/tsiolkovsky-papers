@@ -6,8 +6,15 @@ Konstantin Tsiolkovsky (1857–1935) derived the rocket equation, described the
 multistage rocket, the orbital station and the space elevator, and worked out
 the physics of spaceflight decades before anyone could test it. His personal
 archive — **fond 555 of the Archive of the Russian Academy of Sciences** — has
-been scanned and put online: **1,979 files, 31,680 pages** of manuscripts,
-drafts, calculations and correspondence.
+been scanned and put online: roughly **2,000 files** across five inventories
+(opis 1, 1A, 2, 3, 4) of manuscripts, drafts, calculations and
+correspondence.
+
+The archive describes the fond as 31,680 *sheets*. That is not the number of
+images: a sheet has a reverse side and each side is scanned separately, so
+the number of scans is substantially higher. Opis 1 alone is over 27,000
+scans. The exact figure will be stated here once retrieval completes rather
+than estimated now.
 
 It is scanned, but it is not readable by a machine. There is no catalogue you
 can query, no full-text search, no dataset. This repository is the pipeline

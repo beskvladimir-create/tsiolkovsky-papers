@@ -48,31 +48,30 @@ def split_name(raw):
 
 
 def load():
+    """Читает catalog.csv. Схема после переразметки 29.07: опись и номер дела
+    настоящие, архивные; portal_id это сквозной id страницы на сайте РАН, по
+    нему строится ссылка на источник."""
     rows = []
     with open(CATALOG, encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            try:
-                opis, delo = int(r["opis_page"]), int(r["delo"])
-            except (ValueError, KeyError):
+            pid = r.get("portal_id", "")
+            if not pid.isdigit():
                 continue
             parts = split_name(r.get("name", ""))
             rows.append({
                 "opis": r.get("opis", ""),
-                "opis_page": opis,
-                "delo": delo,
+                "opis_code": r.get("opis_code", ""),
+                "delo": r.get("delo", "").lstrip("0") or "0",
+                "portal_id": int(pid),
                 **parts,
                 "pages_downloaded": int(r.get("pages") or 0),
                 "pages_expected": int(r.get("expected") or 0),
                 "status": r.get("status", ""),
-                "source_url": f"{BASE}/{opis}_actview.aspx?id={delo}",
+                # номер описи в адресе декоративный, работает любой; оставляем 1
+                "source_url": f"{BASE}/1_actview.aspx?id={pid}",
             })
-    # на всякий случай схлопываем дубли: оставляем строку с большим числом листов
-    best = {}
-    for r in rows:
-        k = (r["opis_page"], r["delo"])
-        if k not in best or r["pages_downloaded"] > best[k]["pages_downloaded"]:
-            best[k] = r
-    return [best[k] for k in sorted(best)]
+    rows.sort(key=lambda r: (r["opis_code"], r["delo"].zfill(5)))
+    return rows
 
 
 def main():
@@ -93,20 +92,24 @@ def main():
     prio = [r for r in rows if PRIORITY_RE.search(r["title"])]
     prio.sort(key=lambda r: -r["pages_expected"])
     with open(os.path.join(ROOT, "priority.csv"), "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["opis_page", "delo", "pages_expected",
+        w = csv.DictWriter(f, fieldnames=["opis", "delo", "pages_expected",
                                           "status", "title", "source_url"])
         w.writeheader()
         for r in prio:
             w.writerow({k: r[k] for k in w.fieldnames})
 
+    import collections
+    by = collections.Counter(r["opis"] for r in rows)
     print(f"catalog.json: {len(rows)} дел, "
           f"{sum(r['pages_downloaded'] for r in rows)} из "
-          f"{sum(r['pages_expected'] for r in rows)} листов скачано")
+          f"{sum(r['pages_expected'] for r in rows)} сканов скачано")
+    for k in sorted(by):
+        print(f"  {k:<10} {by[k]:>4} дел")
     print(f"priority.csv: {len(prio)} дел, "
           f"{sum(r['pages_expected'] for r in prio)} листов")
     print("\nприоритет, топ-15:")
     for r in prio[:15]:
-        print(f"  д.{r['delo']:>4} {r['pages_expected']:>4} л.  {r['title'][:72]}")
+        print(f"  {r['opis']} д.{r['delo']:>5} {r['pages_expected']:>4} л.  {r['title'][:60]}")
 
 
 if __name__ == "__main__":

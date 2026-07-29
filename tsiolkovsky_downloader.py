@@ -3,16 +3,31 @@
 Скачивание оцифрованного архива К.Э. Циолковского (фонд 555, Архив РАН).
 Портал: https://www.ras.ru/ktsiolkovskyarchive/
 
-Описи (номер в URL = страница описи):
-  1 -> Опись 1,  2 -> Опись 1А,  3 -> Опись 2,  4 -> Опись 3,  5 -> Опись 4
+КАК УСТРОЕН ПОРТАЛ (выяснено опытным путём 29.07.2026)
+
+Номер описи в адресе страницы декоративный: 1_actview.aspx?id=834 и
+5_actview.aspx?id=834 отдают один и тот же документ. id сквозной по всему
+фонду, примерно от 1 до 2050.
+
+Настоящая опись и настоящий архивный номер дела зашиты в пути к сканам:
+    /CArchive/pageimages/555\\1_033/000.jpg  ->  опись 1, дело 33
+    /CArchive/pageimages/555\\4_585а/012.jpg ->  опись 3, дело 585а
+Причём id портала не равен номеру дела: id 300 это дело 1_297.
+
+Границы (двоичный поиск по id, уточнено переразметкой):
+    id    1 -  595   папки 1_ и 1а_   Опись 1 и Опись 1А
+    id  596 -  807   папка  2_        Опись 2
+    id  808 - 1005   папка  3_        Опись 3
+    id 1006 - ~2050  папка  4_        Опись 4
+Опись 1А обозначена буквой в префиксе (1а_), поэтому по одним числовым
+префиксам её не видно и кажется, будто описей четыре.
 
 Свойства:
-  - парсит страницу дела, берёт реальные ссылки на сканы; если их нет -> шаблон пути (fallback);
-  - сохраняет в data/opis_{N}/delo_{ID:04d}/{page:03d}.jpg;
-  - resume: уже скачанные валидные файлы не перекачивает;
-  - пауза 0.5-1 c между запросами, ретраи при сбоях;
-  - catalog.csv: опись, номер дела, название, число страниц, статус;
-  - несуществующие id дел пропускает.
+  - один проход по сквозному id, опись и номер дела берутся из HTML;
+  - сохраняет в data/opis_{префикс}/delo_{номер}/{стр:03d}.jpg;
+  - resume: уже скачанные валидные файлы не перекачиваются;
+  - крупные сканы берутся кусками через Range (сервер режет ответ на ~130 КБ);
+  - catalog.csv: опись, номер дела, id портала, название, число страниц, статус.
 
 Одна закачка за раз (без параллельных запросов) — это государственный портал.
 """
@@ -34,14 +49,18 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
 CATALOG = os.path.join(ROOT, "catalog.csv")
 
-OPIS_NAME = {1: "Опись 1", 2: "Опись 1А", 3: "Опись 2", 4: "Опись 3", 5: "Опись 4"}
+# Префикс папки со сканами и есть обозначение описи: 555\1а_012 это опись 1А,
+# дело 12. Опись 1А обозначена буквой, а не цифрой, поэтому описей пять, а не
+# четыре, как показалось по одним лишь числовым префиксам.
+OPIS_NAME = {"1": "Опись 1", "1а": "Опись 1А", "2": "Опись 2",
+             "3": "Опись 3", "4": "Опись 4"}
 
 # минимальный валидный jpeg — по сигнатуре FFD8FF и хвосту FFD9
 JPEG_SOI = b"\xff\xd8\xff"
 
 
 def qurl(url):
-    """Дела с буквенным номером (555\\1_145а) приходят из HTML с кириллицей в
+    """Дела с буквенным номером (555\\4_585а) приходят из HTML с кириллицей в
     пути; urllib кодирует URL в ascii и падает, поэтому квотим сами. % в safe,
     чтобы уже готовый %5C не закодировался повторно."""
     return urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=%~")
@@ -132,29 +151,43 @@ def polite_sleep():
     time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
 
 
-def parse_delo(html, opis):
-    """Из HTML страницы дела достаёт название и список URL сканов (в порядке)."""
+def norm_delo(raw):
+    """'033' -> '0033', '585а' -> '0585а'. Нули слева это padding портала,
+    буквенный суффикс — часть настоящего архивного номера."""
+    m = re.match(r"0*(\d+)(.*)$", raw)
+    if not m:
+        return raw
+    return f"{int(m.group(1)):04d}{m.group(2)}"
+
+
+def parse_delo(html):
+    """Из HTML страницы дела достаёт название, папку со сканами и список URL.
+
+    Папка — единственный источник правды о том, к какой описи относится дело
+    и какой у него настоящий архивный номер: в адресе страницы этого нет.
+    """
+    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html))
     name = ""
-    # снимаем теги, потом ищем поле «Название:» в чистом тексте
-    text = re.sub(r"<[^>]+>", " ", html)
-    text = re.sub(r"\s+", " ", text)
     m = re.search(r"Название:\s*(.+?)(?:Крайние даты|Количество (?:дел|листов)|Даты|$)", text)
     if m:
         name = m.group(1).strip().strip('"').strip()
 
-    # реальные ссылки на сканы (бэкслэш в HTML)
     raw = re.findall(r"/CArchive/pageimages/[^\"'> ]+?\.jpg", html, re.I)
-    seen, links = set(), []
+    seen, links, folder = set(), [], None
     for p in raw:
-        if p not in seen:
-            seen.add(p)
-            links.append(BASE + p.replace("\\", "%5C"))
-    return name, links
+        if p in seen:
+            continue
+        seen.add(p)
+        if folder is None:
+            f = re.search(r"/pageimages/555\\([^/\"'> ]+)/", p)
+            if f:
+                folder = f.group(1)
+        links.append(BASE + p.replace("\\", "%5C"))
 
-
-def template_urls(opis, delo_id, count):
-    folder = f"555%5C{opis}_{delo_id:03d}"
-    return [f"{BASE}/CArchive/pageimages/{folder}/{p:03d}.jpg" for p in range(count)]
+    opis_code, delo_no = (None, None)
+    if folder and "_" in folder:
+        opis_code, delo_no = folder.split("_", 1)
+    return name, opis_code, delo_no, links
 
 
 def valid_jpeg(path):
@@ -170,42 +203,30 @@ def valid_jpeg(path):
         return False
 
 
-def download_delo(opis, delo_id):
-    """Скачивает одно дело. Возвращает dict для каталога или None если дела нет."""
-    delo_dir = os.path.join(DATA, f"opis_{opis}", f"delo_{delo_id:04d}")
-    html = fetch(f"{BASE}/ktsiolkovskyarchive/{opis}_actview.aspx?id={delo_id}")
+def download_delo(portal_id):
+    """Скачивает одно дело по сквозному id портала.
+
+    Возвращает dict для каталога или None, если дела нет. Опись и номер дела
+    берём из пути к сканам, а не из id: id 300 это дело 297 описи 1.
+    """
+    html = fetch(f"{BASE}/ktsiolkovskyarchive/1_actview.aspx?id={portal_id}")
     polite_sleep()
+    if not html:
+        return None
 
-    name, links = ("", [])
-    if html:
-        name, links = parse_delo(html, opis)
+    name, opis_code, delo_no, links = parse_delo(html)
+    if not links or not opis_code:
+        return None  # дела нет или оно не оцифровано
 
-    # если ссылок в HTML нет — пробуем шаблон: качаем пока идут 000,001,...
-    from_template = False
-    if not links:
-        # пробный первый файл; если нет — дело отсутствует
-        probe = template_urls(opis, delo_id, 1)[0]
-        first = fetch(probe, binary=True)
-        polite_sleep()
-        if not first:
-            return None  # дела нет
-        from_template = True
-
+    delo = norm_delo(delo_no)
+    delo_dir = os.path.join(DATA, f"opis_{opis_code}", f"delo_{delo}")
     os.makedirs(delo_dir, exist_ok=True)
-    saved = 0
-    page = 0
-    while True:
-        if not from_template:
-            if page >= len(links):
-                break
-            url = links[page]
-        else:
-            url = template_urls(opis, delo_id, page + 1)[page]
 
+    saved = 0
+    for page, url in enumerate(links):
         dest = os.path.join(delo_dir, f"{page:03d}.jpg")
         if os.path.exists(dest) and valid_jpeg(dest):
             saved += 1
-            page += 1
             continue
 
         # три обычные попытки, потом докачка по частям: на крупных сканах
@@ -215,70 +236,38 @@ def download_delo(opis, delo_id):
             blob = fetch_chunked(url)
         polite_sleep()
         if not blob:
-            if from_template:
-                break  # шаблон исчерпан
-            else:
-                sys.stderr.write(f"  ! пропущен скан {url}\n")
-                page += 1
-                continue
+            sys.stderr.write(f"  ! пропущен скан {url}\n")
+            continue
         with open(dest, "wb") as f:
             f.write(blob)
         if valid_jpeg(dest):
             saved += 1
         else:
             sys.stderr.write(f"  ! битый jpeg {dest}\n")
-        page += 1
 
     # "ok" только если скачаны ВСЕ листы, объявленные в HTML.
     # частично скачанное (сервер резал) -> "partial", докачается при resume.
-    if not saved:
-        status = "empty"
-    elif not from_template and saved < len(links):
-        status = "partial"
-    else:
-        status = "ok"
-    expected = len(links) if not from_template else saved
-    return {"opis": OPIS_NAME.get(opis, opis), "opis_page": opis,
-            "delo": delo_id, "name": name, "pages": saved,
-            "expected": expected, "status": status}
+    status = "empty" if not saved else ("ok" if saved == len(links) else "partial")
+    return {"opis": OPIS_NAME.get(opis_code, f"опись {opis_code}"),
+            "opis_code": opis_code, "delo": delo, "portal_id": portal_id,
+            "name": name, "pages": saved, "expected": len(links),
+            "status": status}
 
 
-def load_done_catalog():
-    done = set()
-    if os.path.exists(CATALOG):
-        with open(CATALOG, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                if row.get("status") == "ok":
-                    done.add((int(row["opis_page"]), int(row["delo"])))
-    return done
+FIELDS = ["opis", "opis_code", "delo", "portal_id", "name",
+          "pages", "expected", "status"]
 
 
-FIELDS = ["opis", "opis_page", "delo", "name", "pages", "expected", "status"]
+def read_catalog():
+    if not os.path.exists(CATALOG):
+        return []
+    with open(CATALOG, encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
 
-def append_catalog(row):
-    """Записывает дело в каталог, заменяя прежнюю строку, если она уже есть.
-
-    Раньше строка просто дописывалась в конец. Неполные дела перекачиваются при
-    каждом перезапуске, и каждый перезапуск плодил дубль: за пять рестартов
-    накопилось 20 лишних строк, а каталог завышал число листов. Пишем через
-    временный файл и os.replace, потому что процесс регулярно убивают при
-    засыпании ноутбука и оборванная запись испортила бы каталог.
-    """
-    rows = []
-    if os.path.exists(CATALOG):
-        with open(CATALOG, encoding="utf-8") as f:
-            rows = list(csv.DictReader(f))
-
-    key = (str(row["opis_page"]), str(row["delo"]))
-    clean = {k: row.get(k, "") for k in FIELDS}
-    for i, r in enumerate(rows):
-        if (r.get("opis_page"), r.get("delo")) == key:
-            rows[i] = clean
-            break
-    else:
-        rows.append(clean)
-
+def write_catalog(rows):
+    """Пишем через временный файл: процесс регулярно убивают при засыпании
+    ноутбука, оборванная запись испортила бы каталог."""
     tmp = CATALOG + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
@@ -288,120 +277,115 @@ def append_catalog(row):
     os.replace(tmp, CATALOG)
 
 
-def run_opis(opis, id_from, id_to, miss_stop):
-    done = load_done_catalog()
-    print(f"=== {OPIS_NAME.get(opis, opis)} (страница {opis}), id {id_from}..{id_to} ===", flush=True)
+def upsert_catalog(row):
+    """Пишет дело в каталог, заменяя прежнюю строку. Ключ — id портала: он
+    уникален и стабилен, в отличие от пары (опись, дело), которую мы узнаём
+    только после запроса."""
+    rows = read_catalog()
+    clean = {k: str(row.get(k, "")) for k in FIELDS}
+    for i, r in enumerate(rows):
+        if r.get("portal_id") == str(row["portal_id"]):
+            rows[i] = clean
+            break
+    else:
+        rows.append(clean)
+    write_catalog(rows)
+
+
+def done_ids():
+    return {r["portal_id"] for r in read_catalog() if r.get("status") == "ok"}
+
+
+def run_fond(id_from, id_to, miss_stop):
+    """Один проход по сквозному id. Описи не перебираем: их не существует как
+    отдельных пространств id, они определяются папкой со сканами."""
+    done = done_ids()
+    print(f"=== фонд 555, id {id_from}..{id_to} ===", flush=True)
     misses = 0
     total_delos = total_pages = 0
-    for delo_id in range(id_from, id_to + 1):
-        if (opis, delo_id) in done:
-            print(f"  дело {delo_id}: уже в каталоге, пропуск", flush=True)
+    for pid in range(id_from, id_to + 1):
+        if str(pid) in done:
             continue
-        row = download_delo(opis, delo_id)
+        row = download_delo(pid)
         if row is None:
             misses += 1
             if misses >= miss_stop:
-                print(f"  подряд {misses} несуществующих id -> конец описи на {delo_id}", flush=True)
+                print(f"  подряд {misses} несуществующих id -> конец фонда на {pid}",
+                      flush=True)
                 break
             continue
         misses = 0
-        append_catalog(row)
+        upsert_catalog(row)
         total_delos += 1
         total_pages += row["pages"]
-        print(f"  дело {delo_id}: {row['pages']} стр. | {row['name'][:70]}", flush=True)
-    print(f"--- итог: {total_delos} дел, {total_pages} страниц ---", flush=True)
+        print(f"  id {pid} = {row['opis']} д.{row['delo']}: "
+              f"{row['pages']}/{row['expected']} стр. | {row['name'][:60]}", flush=True)
+    print(f"--- итог прохода: {total_delos} дел, {total_pages} страниц ---", flush=True)
 
 
-def rewrite_catalog(rows):
-    with open(CATALOG, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["opis", "opis_page", "delo", "name", "pages", "expected", "status"])
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: r.get(k, "") for k in w.fieldnames})
-
-
-def redo_incomplete(opis_filter=None):
+def redo_incomplete():
     """До-качивает дела со статусом partial/empty. Сервер РАН нестабилен,
     поэтому вызывать проходами, пока все не станут ok."""
-    if not os.path.exists(CATALOG):
-        print("каталога нет"); return 0
-    rows = list(csv.DictReader(open(CATALOG, encoding="utf-8")))
-    todo = [r for r in rows if r["status"] in ("partial", "empty")
-            and (opis_filter is None or int(r["opis_page"]) == opis_filter)]
+    rows = read_catalog()
+    todo = [r for r in rows if r.get("status") in ("partial", "empty")]
     if not todo:
-        print("неполных дел нет — всё ok"); return 0
+        print("неполных дел нет — всё ok")
+        return 0
     print(f"до-качиваю {len(todo)} неполных дел", flush=True)
     fixed = 0
     for r in todo:
-        op, did = int(r["opis_page"]), int(r["delo"])
-        new = download_delo(op, did)
+        new = download_delo(int(r["portal_id"]))
         if new is None:
             continue
-        # обновляем строку в каталоге
-        for i, x in enumerate(rows):
-            if int(x["opis_page"]) == op and int(x["delo"]) == did:
-                rows[i] = new
-                break
-        rewrite_catalog(rows)
-        mark = "ok" if new["status"] == "ok" else new["status"]
+        upsert_catalog(new)
         if new["status"] == "ok":
             fixed += 1
-        print(f"  дело {did}: {new['pages']}/{new.get('expected','?')} л. [{mark}]", flush=True)
+        print(f"  {new['opis']} д.{new['delo']}: "
+              f"{new['pages']}/{new['expected']} л. [{new['status']}]", flush=True)
     print(f"вылечено до ok: {fixed} из {len(todo)}", flush=True)
-    return len(todo) - fixed  # осталось неполных
-
-
-def run_full(id_to, miss_stop, heal_passes=8):
-    """Весь фонд: описи 1..5, каждая = основной проход + циклическое долечивание.
-    Один процесс (переживает nohup). Сервер РАН нестабилен, но скорость его не
-    банит — дыры добиваем повторами."""
-    for opis in (1, 2, 3, 4, 5):
-        print(f"\n########## ОПИСЬ {OPIS_NAME[opis]} (страница {opis}) ##########", flush=True)
-        run_opis(opis, 1, id_to, miss_stop)
-        for p in range(1, heal_passes + 1):
-            left = redo_incomplete(opis)
-            if left == 0:
-                break
-            print(f"опись {opis}: проход долечивания {p}, осталось {left}", flush=True)
-            time.sleep(60)
-        print(f"########## ОПИСЬ {opis} готова ##########", flush=True)
-    print("\n===== ВЕСЬ ФОНД 555 ОБРАБОТАН =====", flush=True)
+    return len(todo) - fixed
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--opis", type=int, default=1, help="номер страницы описи 1..5")
     ap.add_argument("--from", dest="id_from", type=int, default=1)
-    ap.add_argument("--to", dest="id_to", type=int, default=600)
-    ap.add_argument("--miss-stop", type=int, default=40,
-                    help="сколько несуществующих id подряд считать концом описи")
-    ap.add_argument("--only", type=int, default=None, help="скачать одно дело по id")
-    ap.add_argument("--redo-incomplete", action="store_true",
-                    help="до-качать дела со статусом partial/empty")
-    ap.add_argument("--full", action="store_true",
-                    help="весь фонд: описи 1..5 с долечиванием, один процесс")
+    ap.add_argument("--to", dest="id_to", type=int, default=2200,
+                    help="id-пространство фонда кончается примерно на 2050")
+    ap.add_argument("--miss-stop", type=int, default=60,
+                    help="сколько несуществующих id подряд считать концом фонда")
+    ap.add_argument("--only", type=int, default=None, help="одно дело по id портала")
+    ap.add_argument("--redo-incomplete", action="store_true")
+    ap.add_argument("--heal-passes", type=int, default=8,
+                    help="проходов долечивания после основного")
     ap.add_argument("--delay", type=float, nargs=2, metavar=("MIN", "MAX"),
-                    default=[0.5, 1.0], help="пауза между запросами, сек (мин макс)")
+                    default=[0.5, 1.0], help="пауза между запросами, сек")
     args = ap.parse_args()
 
     global DELAY_MIN, DELAY_MAX
     DELAY_MIN, DELAY_MAX = args.delay
     os.makedirs(DATA, exist_ok=True)
-    if args.full:
-        run_full(args.id_to, args.miss_stop)
-        return
+
     if args.redo_incomplete:
-        left = redo_incomplete(args.opis if args.opis else None)
-        sys.exit(0 if left == 0 else 3)
+        sys.exit(0 if redo_incomplete() == 0 else 3)
+
     if args.only is not None:
-        row = download_delo(args.opis, args.only)
+        row = download_delo(args.only)
         if row is None:
             print("дела нет")
         else:
-            append_catalog(row)
-            print(f"дело {args.only}: {row['pages']} стр. | {row['name']}")
+            upsert_catalog(row)
+            print(f"id {args.only} = {row['opis']} д.{row['delo']}: "
+                  f"{row['pages']}/{row['expected']} стр. | {row['name']}")
         return
-    run_opis(args.opis, args.id_from, args.id_to, args.miss_stop)
+
+    run_fond(args.id_from, args.id_to, args.miss_stop)
+    for p in range(1, args.heal_passes + 1):
+        left = redo_incomplete()
+        if left == 0:
+            break
+        print(f"проход долечивания {p}, осталось {left}", flush=True)
+        time.sleep(60)
+    print("\n===== ФОНД 555 ОБРАБОТАН =====", flush=True)
 
 
 if __name__ == "__main__":
