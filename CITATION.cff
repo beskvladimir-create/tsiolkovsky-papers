@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "Tsiolkovsky Papers: a machine-readable catalogue of fond 555, Archive of the Russian Academy of Sciences"
+message: "If you use this catalogue or the pipeline, please cite it as below."
+type: dataset
+authors:
+  - family-names: Beskorovainyi
+    given-names: Vladimir
+repository-code: "https://github.com/beskvladimir-create/tsiolkovsky-papers"
+abstract: >-
+  The personal archive of Konstantin E. Tsiolkovsky (1857-1935) is held as
+  fond 555 of the Archive of the Russian Academy of Sciences and has been
+  scanned and put online, but without a queryable catalogue, full-text search
+  or dataset. This repository contains a machine-readable catalogue of all
+  2,019 files of the fond across its five inventories, covering 51,008 scans,
+  together with the retrieval and measurement pipeline that produced it: a
+  resumable downloader that resolves each file's real archival inventory and
+  number from the scan paths, a page classifier that separates handwriting
+  from typescript without a neural network, and a tool that scores
+  transcriptions against published texts on Russian Wikisource.
+keywords:
+  - digital humanities
+  - archives
+  - history of science
+  - astronautics
+  - Tsiolkovsky
+  - handwritten text recognition
+  - Russian
+license: MIT
+date-released: 2026-07-30
