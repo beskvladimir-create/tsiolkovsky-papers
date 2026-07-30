@@ -1,31 +1,15 @@
-# Сканы: 18 ГБ сырья, в git не место.
-# (исключаем содержимое, а не саму папку: иначе git не заглянет внутрь
-#  и отрицание ниже не сработает)
-data/*
-# Транскрипции держим отдельно до выпуска корпуса вместе со статьёй.
-!data/transcripts/
+# Scans retrieved from the archive: 18 GB, and they are the archive's to
+# publish rather than ours to redistribute.
+data/
 
-# Логи прогонов
+# Run logs and process state written by keeper.sh
 *.log
-
-# Состояние процессов
 .full_pid
-.dl_pid
-.orch_pid
 .keeper_pid
 
-# Бэкапы каталога
-catalog.csv.bak
-
-# macOS
-.DS_Store
-
-# Производные метрики: пересчитываются classify_pages.py за 100 секунд
+# Output of classify_pages.py, regenerated in about 100 seconds
 page_metrics.csv
 
-# Кэш питона
 __pycache__/
 *.pyc
-
-# Разовые производные файлы
-remap.json
+.DS_Store

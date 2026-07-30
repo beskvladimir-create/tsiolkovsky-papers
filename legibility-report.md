@@ -66,4 +66,4 @@ rather than sequentially through 51,008 scans.
 
 ---
 
-*Russian original: [`ОТЧЁТ_А0_читаемость.md`](ОТЧЁТ_А0_читаемость.md).*
+*Russian version: [`legibility-report.ru.md`](legibility-report.ru.md).*

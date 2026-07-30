@@ -100,8 +100,8 @@ separately.
 **Legibility.** A reading test across four page types of file 33 put confident
 legibility at 75–85% on pages of running text — covers and headings read
 almost without loss, faded ink and authorial deletions are the hard cases.
-Full report: [`legibility-report.md`](legibility-report.md) (Russian original:
-`ОТЧЁТ_А0_читаемость.md`).
+Full report: [`legibility-report.md`](legibility-report.md), also in
+[Russian](legibility-report.ru.md).
 
 **Transcription accuracy.** Reported as a measured figure, not an estimate.
 Where a document in the fond corresponds to a text published on Russian
