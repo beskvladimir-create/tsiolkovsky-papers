@@ -26,3 +26,6 @@ page_metrics.csv
 # Кэш питона
 __pycache__/
 *.pyc
+
+# Состояние процессов
+.keeper_pid

@@ -148,5 +148,15 @@ Tsiolkovsky died in 1935; his works are in the public domain. The scans are
 produced and hosted by the Archive of the RAS and are not redistributed here.
 Code in this repository is MIT. The catalogue is released CC0.
 
+## Author
+
+Vladimir Beskorovainyi — sole author of this work.
+
 This is an independent research project, not affiliated with or endorsed by
 the Archive of the Russian Academy of Sciences.
+
+## Citation
+
+    Beskorovainyi, V. (2026). Tsiolkovsky Papers: a machine-readable
+    catalogue of fond 555, Archive of the Russian Academy of Sciences.
+    https://github.com/beskvladimir-create/tsiolkovsky-papers
