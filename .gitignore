@@ -22,3 +22,7 @@ catalog.csv.bak
 
 # Производные метрики: пересчитываются classify_pages.py за 100 секунд
 page_metrics.csv
+
+# Кэш питона
+__pycache__/
+*.pyc
