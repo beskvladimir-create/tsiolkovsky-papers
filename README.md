@@ -1,5 +1,9 @@
 # Tsiolkovsky Papers
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21705221.svg)](https://doi.org/10.5281/zenodo.21705221)
+[![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+[![Catalogue: CC0](https://img.shields.io/badge/catalogue-CC0-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
+
 **A machine-readable catalogue of the personal archive of Konstantin
 Tsiolkovsky — all 2,019 files, 51,008 scans — and the pipeline that produced
 it.**
@@ -187,7 +191,8 @@ the Archive of the Russian Academy of Sciences.
 Vladimir Beskorovainyi — sole author of this work.
 
     Beskorovainyi, V. (2026). Tsiolkovsky Papers: a machine-readable
-    catalogue of fond 555, Archive of the Russian Academy of Sciences.
-    https://github.com/beskvladimir-create/tsiolkovsky-papers
+    catalogue of fond 555, Archive of the Russian Academy of Sciences
+    (v1.0.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.21705221
 
-See `CITATION.cff` for the machine-readable form.
+The DOI above is the concept DOI and always resolves to the latest release;
+this release is 10.5281/zenodo.21705222. See `CITATION.cff` for the machine-readable form.

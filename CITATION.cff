@@ -6,6 +6,15 @@ authors:
   - family-names: Beskorovainyi
     given-names: Vladimir
 repository-code: "https://github.com/beskvladimir-create/tsiolkovsky-papers"
+doi: "10.5281/zenodo.21705221"
+version: v1.0.0
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.21705221"
+    description: Concept DOI, always resolves to the latest release
+  - type: doi
+    value: "10.5281/zenodo.21705222"
+    description: DOI of release v1.0.0
 abstract: >-
   The personal archive of Konstantin E. Tsiolkovsky (1857-1935) is held as
   fond 555 of the Archive of the Russian Academy of Sciences and has been
