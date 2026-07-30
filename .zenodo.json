@@ -7,7 +7,7 @@
       "name": "Beskorovainyi, Vladimir"
     }
   ],
-  "license": "cc0-1.0",
+  "license": "cc-zero",
   "description": "<p>The personal archive of Konstantin E. Tsiolkovsky (1857-1935) is held as fond 555 of the Archive of the Russian Academy of Sciences. It has been scanned and put online, but without a queryable catalogue, full-text search or dataset.</p><p>This record contains a machine-readable catalogue of all 2,019 files of the fond across its five inventories, covering 51,008 scans, with the real archival inventory and file numbers, so that each row is a citable archival reference. It also contains the retrieval and measurement pipeline that produced it: a resumable downloader that resolves each file's inventory and number from the scan paths, a page classifier that separates handwriting from typescript without a neural network, and a tool that scores transcriptions against published texts on Russian Wikisource.</p><p>Measured over the whole fond: 51,008 scans retrieved and structurally verified with none corrupt; 83% handwritten, 12% typewritten, 5% notes and covers.</p><p>The catalogue is released under CC0. The code in the repository is MIT.</p>",
   "keywords": [
     "digital humanities",
