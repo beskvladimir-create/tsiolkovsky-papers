@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-Быстрая классификация сканов без нейросети: PIL + numpy, миллисекунды на лист.
+Fast page classification without a neural network: PIL and numpy, milliseconds
+per scan.
 
-Идея: печать и рукопись различаются регулярностью строк. У печатного текста
-базовые линии идут с почти постоянным шагом и одинаковой толщиной штриха,
-у рукописи шаг и плотность гуляют. Пустые листы отсекаются по доле чернил.
+The idea: typescript and handwriting differ in the regularity of their lines.
+Typed text sits on baselines spaced almost identically with a uniform stroke;
+in handwriting both the spacing and the density wander. Blank pages fall out
+on ink coverage.
 
-Считает по каждому листу:
-  ink      доля тёмных пикселей после нормализации контраста
-  lines    число текстовых строк (по горизонтальной проекции)
-  regular  регулярность шага строк, 1 = идеально ровный (печать)
-  contrast разброс яркости, низкий = выцветший лист
+Measured per scan:
+  ink       fraction of dark pixels after contrast normalisation
+  lines     number of text lines, from the horizontal projection
+  regular   regularity of line spacing, 1 = perfectly even (typescript)
+  contrast  spread of brightness; low means a faded page
 
-Выход: CSV, дальше решаем порог по глазам на выборке.
+Output is a CSV. Thresholds are then chosen by looking at a sample rather than
+assumed: over fond 555, `regular > 0.8` with at least 10 lines separates
+typescript reliably, while the band between 0.65 and 0.8 turns out to be neat
+handwriting, not print.
 """
 import csv
 import os
@@ -22,7 +27,7 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
-WIDTH = 900  # до этой ширины ужимаем перед анализом, деталей хватает
+WIDTH = 900  # scans are reduced to this width first; the detail is sufficient
 
 
 def metrics(path):
@@ -35,7 +40,8 @@ def metrics(path):
         im = im.resize((WIDTH, int(h * WIDTH / w)), Image.BILINEAR)
     a = np.asarray(im, dtype=np.float32)
 
-    # нормализация контраста по перцентилям: гасит разницу в освещении сканов
+    # Normalise contrast on percentiles: this cancels out differences in how
+    # brightly individual scans were lit.
     lo, hi = np.percentile(a, 5), np.percentile(a, 95)
     contrast = float(hi - lo)
     if hi - lo < 1e-3:
@@ -45,12 +51,12 @@ def metrics(path):
     ink_mask = n < 0.55
     ink = float(ink_mask.mean())
 
-    # горизонтальная проекция: сколько чернил в каждой строке пикселей
+    # Horizontal projection: how much ink falls on each row of pixels.
     proj = ink_mask.mean(axis=1)
     thr = proj.mean() + 0.15 * proj.std() if proj.std() > 0 else 1.0
     on = proj > max(thr, 0.01)
 
-    # границы полос текста
+    # Boundaries of the bands of text.
     starts, ends = [], []
     prev = False
     for i, v in enumerate(on):
@@ -67,7 +73,8 @@ def metrics(path):
     if lines >= 4:
         centers = np.array([(s + e) / 2 for s, e in bands])
         gaps = np.diff(centers)
-        # коэффициент вариации шага: у печати мал, у рукописи велик
+        # Coefficient of variation of the spacing: small for type, large for
+        # handwriting.
         cv = float(gaps.std() / gaps.mean()) if gaps.mean() > 0 else 1.0
         regular = float(max(0.0, 1.0 - cv))
     else:
@@ -93,7 +100,7 @@ def main():
                     files.append((opis, delo, page, os.path.join(dd, page)))
 
     if limit and len(files) > limit:
-        rng = np.random.default_rng(42)  # фиксированное зерно: выборка воспроизводима
+        rng = np.random.default_rng(42)  # fixed seed, so the sample repeats
         idx = rng.choice(len(files), limit, replace=False)
         files = [files[i] for i in sorted(idx)]
 
@@ -109,7 +116,7 @@ def main():
             w.writerow(dict(opis=opis, delo=delo, page=page, **m))
             if i % 500 == 0:
                 print(f"  {i}/{len(files)}", flush=True)
-    print(f"готово: {len(files)} листов -> {out}")
+    print(f"done: {len(files)} scans -> {out}")
 
 
 if __name__ == "__main__":

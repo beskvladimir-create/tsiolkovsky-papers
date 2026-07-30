@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Экспорт каталога фонда 555 в JSON и сборка приоритетного списка дел.
+Export the fond 555 catalogue to JSON and build the priority list.
 
-catalog.csv пишется скачивателем построчно и содержит сырые поля со страницы
-РАН. Здесь мы его разбираем: вытаскиваем из слитного «Название» отдельные
-поля (вид материала, способ воспроизведения, крайние даты), проставляем
-ссылку на страницу дела и отдаём машиночитаемый JSON.
+catalog.csv is written row by row by the downloader and holds the portal's
+fields as they arrive. Here they are unpacked: the run-together "Название"
+field is split into title, material type, reproduction method and dates, a
+link to the source page is added, and the result is emitted as JSON.
 
-Приоритет: дела ракетно-космической тематики, ради которых проект и делается.
-Отбор по ключевым словам в названии, чтобы список пересобирался сам при
-появлении описей 2-5, а не правился руками.
+The priority list is the rocketry core of the fond, selected by keywords in
+the title so that it rebuilds itself as the catalogue grows rather than being
+maintained by hand.
 """
 import csv
 import json
@@ -20,7 +20,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 CATALOG = os.path.join(ROOT, "catalog.csv")
 BASE = "https://www.ras.ru/ktsiolkovskyarchive"
 
-# ракетно-космическое ядро фонда
+# The rocketry core of the fond. Patterns are Russian because the
+# catalogue titles are.
 PRIORITY_RE = re.compile(
     r"реактивн|ракет|космическ|звездоплав|мировых\s+пространств|"
     r"небесных\s+пространств|вне\s+земли|эфирн|межпланетн|"
@@ -30,7 +31,7 @@ PRIORITY_RE = re.compile(
 
 
 def split_name(raw):
-    """Из слитной строки достаёт заголовок и служебные поля."""
+    """Split the portal's run-together title field into its parts."""
     s = re.sub(r"\s+", " ", raw or "").strip()
     out = {"title": s, "material": "", "reproduction": "", "dates": ""}
     for key, pat in (
@@ -41,16 +42,19 @@ def split_name(raw):
         m = re.search(pat, s, re.I)
         if m:
             out[key] = m.group(1).strip(" .;")
-    # заголовок = всё до первого служебного поля
+    # The title is everything before the first service field.
     cut = re.split(r"Вид материала:|Способ воспроизведения:|Крайние даты:", s, maxsplit=1)[0]
     out["title"] = cut.strip(" .;")
     return out
 
 
 def load():
-    """Читает catalog.csv. Схема после переразметки 29.07: опись и номер дела
-    настоящие, архивные; portal_id это сквозной id страницы на сайте РАН, по
-    нему строится ссылка на источник."""
+    """Read catalog.csv.
+
+    Schema: opis and delo are the real archival inventory and file number;
+    portal_id is the page id on the archive's site, from which the source
+    link is built.
+    """
     rows = []
     with open(CATALOG, encoding="utf-8") as f:
         for r in csv.DictReader(f):
@@ -67,7 +71,8 @@ def load():
                 "pages_downloaded": int(r.get("pages") or 0),
                 "pages_expected": int(r.get("expected") or 0),
                 "status": r.get("status", ""),
-                # номер описи в адресе декоративный, работает любой; оставляем 1
+                # The inventory number in the address is decorative and any
+                # value works; 1 is used consistently.
                 "source_url": f"{BASE}/1_actview.aspx?id={pid}",
             })
     rows.sort(key=lambda r: (r["opis_code"], r["delo"].zfill(5)))
@@ -100,16 +105,16 @@ def main():
 
     import collections
     by = collections.Counter(r["opis"] for r in rows)
-    print(f"catalog.json: {len(rows)} дел, "
-          f"{sum(r['pages_downloaded'] for r in rows)} из "
-          f"{sum(r['pages_expected'] for r in rows)} сканов скачано")
+    print(f"catalog.json: {len(rows)} files, "
+          f"{sum(r['pages_downloaded'] for r in rows)} of "
+          f"{sum(r['pages_expected'] for r in rows)} scans retrieved")
     for k in sorted(by):
-        print(f"  {k:<10} {by[k]:>4} дел")
-    print(f"priority.csv: {len(prio)} дел, "
-          f"{sum(r['pages_expected'] for r in prio)} листов")
-    print("\nприоритет, топ-15:")
+        print(f"  {k:<10} {by[k]:>4} files")
+    print(f"priority.csv: {len(prio)} files, "
+          f"{sum(r['pages_expected'] for r in prio)} sheets")
+    print("\npriority list, top 15:")
     for r in prio[:15]:
-        print(f"  {r['opis']} д.{r['delo']:>5} {r['pages_expected']:>4} л.  {r['title'][:60]}")
+        print(f"  {r['opis']} d.{r['delo']:>5} {r['pages_expected']:>4} sh.  {r['title'][:60]}")
 
 
 if __name__ == "__main__":
