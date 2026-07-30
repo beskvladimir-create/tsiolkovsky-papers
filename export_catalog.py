@@ -87,6 +87,8 @@ def main():
             "fond": "555",
             "archive": "Архив Российской академии наук (Archive of the Russian Academy of Sciences)",
             "person": "Циолковский Константин Эдуардович (Konstantin E. Tsiolkovsky)",
+            "author": "Vladimir Beskorovainyi",
+            "license": "CC0-1.0",
             "source": BASE,
             "files_listed": len(rows),
             "pages_downloaded": sum(r["pages_downloaded"] for r in rows),
