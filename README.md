@@ -24,7 +24,8 @@ This repository closes the first of those gaps.
 | --- | --- |
 | `catalog.csv` / `catalog.json` | Every file in the fond: inventory, archival file number, title, material type, reproduction method, dates, scan count, link to the source page. **2,019 files, complete.** |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
-| Pipeline | Retrieval, page classification and transcription scoring — the code that produced the above and can reproduce it |
+| `corpus/` | **Transcriptions**, one file per archival file. 8 files, 1,238 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
+| Pipeline | Retrieval, page classification, transcription and scoring — the code that produced the above and can reproduce it |
 
 The catalogue is released **CC0**; the code is **MIT**.
 
@@ -77,7 +78,8 @@ not searched; the digitised collected works held by the Russian State Library
 are page images, which is a different question from machine-readable text and
 has not been assessed.
 
-Turning those images into text is the next stage of this project.
+Both variants of *Kosmicheskiy korabl'* are now transcribed in full and are in
+[`corpus/`](corpus/), together with six other files of the rocketry core.
 
 ## What has been measured
 
@@ -128,6 +130,8 @@ text is also published.
 | `export_catalog.py` | Builds `catalog.json` and the priority list from `catalog.csv` |
 | `validate.py` | Scores a transcription against a published text on Russian Wikisource |
 | `keeper.sh` | Restarts the downloader after the machine sleeps |
+| `build_queue.py` | Builds the transcription queue and routes each scan to a model by page type |
+| `assemble.py` | Assembles per-scan output into one document per archival file |
 | `TRANSCRIPTION_SPEC.md` | The fixed per-page instruction given to the model |
 
 Two engineering notes, because both cost a day to find:
@@ -169,10 +173,11 @@ measured against published texts rather than asserted.
 
 ## What comes next
 
-- Transcription of the 97 priority files (4,046 sheets), with accuracy
-  measured against published editions where they exist
+- The remaining priority files: 1,238 of 4,046 scans are done
+- An accuracy figure for handwriting, measured the same way as the one for
+  typescript — against a manuscript whose text is also published
 - English translations of the principal works
-- Release of the corpus as a dataset, with a paper describing the method
+- A paper describing the method
 
 ## Sources and licensing
 
