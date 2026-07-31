@@ -110,16 +110,27 @@ Where a document in the fond corresponds to a text published on Russian
 Wikisource, `validate.py` scores the transcription against it character by
 character.
 
-First measurement — file 33 pages 014–015, a typewritten letter to a newspaper
-editor dated 12 May 1905, against "Письмо в газету «Биржевые ведомости»":
-**98.1% at character level, 91.7% at word level.** Most of the residual
-difference is editorial rather than error: the published edition expands
-abbreviations and modernises orthography, where the transcription keeps the
-source as written.
+**Typescript.** File 33 pages 014–015, a letter to a newspaper editor dated
+12 May 1905, against "Письмо в газету «Биржевые ведомости»":
+**98.1% at character level, 91.7% at word level.**
 
-That figure is for typewriting and does not transfer to handwriting. The
-handwriting figure has to be measured the same way, against a manuscript whose
-text is also published.
+**Handwriting.** File 150, "Four ways of moving over land and water", 20
+scans, autograph, against the text as printed in the journal
+*Vozdukhoplavanie* in 1924:
+
+| | Characters | Words |
+| --- | ---: | ---: |
+| As written | 77.7% | 47.5% |
+| Spelling folded onto modern | **81.1%** | **73.7%** |
+
+Both figures matter and mean different things. The published edition is
+modernised while the transcription keeps pre-reform spelling, so without
+folding, every "полетъ" against "полет" is counted as a misreading when the
+transcription is in fact the faithful one. `--fold-orthography` separates
+reading accuracy from that difference.
+
+81% on handwriting against 98% on typescript is the real shape of the
+problem, and it matches the 75–85% the legibility test estimated by eye.
 
 ## Contents
 
@@ -131,7 +142,9 @@ text is also published.
 | `validate.py` | Scores a transcription against a published text on Russian Wikisource |
 | `keeper.sh` | Restarts the downloader after the machine sleeps |
 | `build_queue.py` | Builds the transcription queue and routes each scan to a model by page type |
+| `night_run.sh` | Runs the queue overnight and stops at a fixed hour, so the day's quota stays free |
 | `assemble.py` | Assembles per-scan output into one document per archival file |
+| `sync.sh` | Copies the published scripts into the working directory, so the two do not drift |
 | `TRANSCRIPTION_SPEC.md` | The fixed per-page instruction given to the model |
 
 Two engineering notes, because both cost a day to find:

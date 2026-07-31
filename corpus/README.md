@@ -14,8 +14,9 @@ work proceeds rather than held back until the fond is finished.
 | `opis_1/delo_0047.md` | **The Spaceship, second variant** | 174 |
 | `opis_1/delo_0051.md` | The Aeroplane — Rocket | 175 |
 | `opis_1/delo_0084.md` | Album of Space Journeys | 162 |
+| `opis_1/delo_0150.md` | Four Ways of Moving over Land and Water | 20 |
 | `opis_1/delo_0252.md` | Life in the Cosmic Ether | 142 |
-| | **Total** | **1,238** |
+| | **Total** | **1,258** |
 
 Every file above is transcribed **in full**. Partially transcribed files are
 not published: a partial transcription reads as a complete text with the
