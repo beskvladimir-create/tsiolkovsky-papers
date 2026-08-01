@@ -8,9 +8,15 @@
 #
 # Default: runs until 04:00, so the window is clear from 09:00.
 #
-#   ./night_run.sh                  until 04:00
-#   STOP_HOUR=3 ./night_run.sh      until 03:00
-#   MAX_BATCHES=5 ./night_run.sh    cap the volume, for a trial run
+#   ./night_run.sh                    until 04:00
+#   STOP_HOUR=3 ./night_run.sh        until 03:00
+#   MAX_BATCHES=5 ./night_run.sh      cap the volume, for a trial run
+#   MAX_MINUTES=180 ./night_run.sh    stop after three hours
+#   IGNORE_WINDOW=1 ./night_run.sh    run outside the night window
+#
+# IGNORE_WINDOW exists for running while away from the machine during the day.
+# Pair it with MAX_MINUTES: the usage window is a rolling five hours, so a
+# daytime run should end well before you need the quota back.
 #
 # Stops by itself on hitting the subscription limit. State lives in
 # queue.json; the run can be killed at any point and loses at most one batch.
@@ -18,21 +24,35 @@
 cd "$(dirname "$0")" || exit 1
 STOP_HOUR="${STOP_HOUR:-4}"
 MAX_BATCHES="${MAX_BATCHES:-100000}"
+MAX_MINUTES="${MAX_MINUTES:-0}"
+IGNORE_WINDOW="${IGNORE_WINDOW:-0}"
+STARTED=$(date +%s)
 OUT=data/transcripts_raw
 mkdir -p "$OUT"
 echo $$ > .night_pid
 
 log() { echo "$(date '+%F %T') $*" | tee -a night_run.log; }
 
-log "run started, stopping at ${STOP_HOUR}:00, batch cap $MAX_BATCHES"
+if [ "$MAX_MINUTES" -gt 0 ]; then
+    log "run started, stopping after $MAX_MINUTES min, batch cap $MAX_BATCHES"
+else
+    log "run started, stopping at ${STOP_HOUR}:00, batch cap $MAX_BATCHES"
+fi
 
 SPEC=$(cat TRANSCRIPTION_SPEC.md)
 n=0
 
 while true; do
+    if [ "$MAX_MINUTES" -gt 0 ]; then
+        ELAPSED=$(( ($(date +%s) - STARTED) / 60 ))
+        if [ "$ELAPSED" -ge "$MAX_MINUTES" ]; then
+            log "ran for $ELAPSED min, stopping"
+            break
+        fi
+    fi
     H=$(date +%-H)
     # window: from the evening until STOP_HOUR in the morning
-    if [ "$H" -ge "$STOP_HOUR" ] && [ "$H" -lt 20 ]; then
+    if [ "$IGNORE_WINDOW" -eq 0 ] && [ "$H" -ge "$STOP_HOUR" ] && [ "$H" -lt 20 ]; then
         log "outside the night window (now ${H}:00), stopping"
         break
     fi
