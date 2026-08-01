@@ -22,6 +22,15 @@
 # queue.json; the run can be killed at any point and loses at most one batch.
 
 cd "$(dirname "$0")" || exit 1
+
+# One instance only. The scheduled 22:00 launch would otherwise start a second
+# run on top of one still going, and both would write the same queue file.
+if [ -f .night_pid ] && ps -p "$(cat .night_pid)" >/dev/null 2>&1; then
+    echo "$(date '+%F %T') already running as PID $(cat .night_pid), exiting" \
+        | tee -a night_run.log
+    exit 0
+fi
+
 STOP_HOUR="${STOP_HOUR:-4}"
 MAX_BATCHES="${MAX_BATCHES:-100000}"
 MAX_MINUTES="${MAX_MINUTES:-0}"
