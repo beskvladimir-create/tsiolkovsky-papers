@@ -83,21 +83,36 @@ Both variants of *Kosmicheskiy korabl'* are now transcribed in full and are in
 
 ## What has been measured
 
-**Page composition.** `classify_pages.py` measures every scan without a neural
-network — printed baselines are evenly spaced, handwriting is not — at 18 ms
-per page. Over all 51,008 scans:
+**Page composition.** `reclassify.py` measures every scan without a neural
+network. Over all 51,008 scans:
 
 | Class | Scans | Share |
 | --- | ---: | ---: |
-| Handwritten | 42,087 | 83% |
-| Typewritten / printed | 6,367 | 12% |
-| Notes and archival covers | 2,554 | 5% |
+| Handwritten | 34,903 | 68% |
+| Typewritten / printed | 14,585 | 29% |
+| Notes and archival covers | 1,520 | 3% |
 
-Typewriting is 14.3% of opis 1 and 13.8% of opis 4, but only 1.8% of opis 1A.
-A further 2.3% of scans are faded enough to be hard cases. This decides how the
-corpus gets processed: only the handwritten 83% needs a vision model, the
-typewritten portion is ordinary OCR, and the faded pages can be routed
-separately.
+This decides how the corpus is processed: the handwritten two-thirds needs a
+vision model, the typewritten third is easier material where a cheaper model
+matches a stronger one, and the ~2% of faded scans can be routed separately.
+
+**These numbers replace an earlier, wrong set** — 83% handwritten, 12%
+typewritten — and the correction is worth describing, because the failure was
+not obvious. The first classifier separated the two by the regularity of line
+spacing, which sounds right and is not: neat cursive is spaced as evenly as
+type, while typescript with paragraph indents looks irregular. It
+misclassified **29% of the fond** and understated typescript nearly threefold.
+
+Nothing about the metric itself revealed this. It surfaced only when a
+transcription was scored against a published edition and came out worse than
+the same pages had scored earlier — which led back to the routing, and from
+there to the classifier.
+
+The replacement uses the variation in ink-run lengths along a line: typed
+characters stand separately and are alike, cursive letters join into long
+strokes of uneven length. The threshold is 0.81, and it classifies all 19
+hand-labelled pages in `labelled_pages.csv` correctly. Nineteen labels is a
+small validation set and the figure should be read as such.
 
 **Legibility.** A reading test across four page types of file 33 put confident
 legibility at 75–85% on pages of running text — covers and headings read
@@ -114,7 +129,7 @@ character.
 12 May 1905, against "Письмо в газету «Биржевые ведомости»":
 **98.1% at character level, 91.7% at word level.**
 
-**Handwriting.** File 150, "Four ways of moving over land and water", 20
+**Handwriting.** File 150, "Four Ways of Moving over Land and Water", 20
 scans, autograph, against the text as printed in the journal
 *Vozdukhoplavanie* in 1924:
 
@@ -132,12 +147,22 @@ reading accuracy from that difference.
 81% on handwriting against 98% on typescript is the real shape of the
 problem, and it matches the 75–85% the legibility test estimated by eye.
 
+Both figures are for scans read by the model suited to them. Reading typescript
+with the model meant for handwriting cost about four points of character
+accuracy and thirty of word accuracy, because it invented pre-reform letters
+the page does not carry — which is how the classifier error above came to
+light.
+
 ## Contents
 
 | File | What it does |
 | --- | --- |
 | `tsiolkovsky_downloader.py` | Walks the fond's flat id space, resolves the real inventory and file number from each scan path, resumes, retries, fetches oversized scans in ranged chunks, validates JPEG structure, maintains the catalogue |
-| `classify_pages.py` | Per-scan metrics: ink coverage, text-line count, baseline regularity, contrast |
+| `classify_pages.py` | Per-scan metrics: ink coverage, line count, contrast. Its line-regularity classification is superseded — see the note in the file |
+| `typescript_features.py` | Features that do separate typescript from handwriting, with the reasoning for each |
+| `reclassify.py` | Classifies every scan using those features |
+| `labelled_pages.csv` | The hand-labelled pages the threshold was validated against |
+| `build_fix_queue.py` | Queues for re-reading the scans an earlier routing sent to the wrong model |
 | `export_catalog.py` | Builds `catalog.json` and the priority list from `catalog.csv` |
 | `validate.py` | Scores a transcription against a published text on Russian Wikisource |
 | `keeper.sh` | Restarts the downloader after the machine sleeps |

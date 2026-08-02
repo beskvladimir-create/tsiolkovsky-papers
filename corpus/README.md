@@ -5,20 +5,12 @@ work proceeds rather than held back until the fond is finished.
 
 ## What is here
 
-| File | Title | Scans |
-| --- | --- | ---: |
-| `opis_1/delo_0033.md` | The Reaction Device as a Means of Flight in Vacuum and in Atmosphere | 16 |
-| `opis_1/delo_0034.md` | Exploration of Celestial Space by Means of Reaction Devices | 176 |
-| `opis_1/delo_0035.md` | The Reaction Device — the Rocket | 208 |
-| `opis_1/delo_0046.md` | **The Spaceship, first variant** | 185 |
-| `opis_1/delo_0047.md` | **The Spaceship, second variant** | 174 |
-| `opis_1/delo_0051.md` | The Aeroplane — Rocket | 175 |
-| `opis_1/delo_0084.md` | Album of Space Journeys | 162 |
-| `opis_1/delo_0150.md` | Four Ways of Moving over Land and Water | 20 |
-| `opis_1/delo_0252.md` | Life in the Cosmic Ether | 142 |
-| | **Total** | **1,258** |
+See the file list in this directory: **98 archival files, 4,066 scans**,
+across all five inventories. The rocketry core is complete, including both
+variants of "The Spaceship" (files 46 and 47), "Exploration of Celestial Space
+by Means of Reaction Devices" (34) and "The Reaction Device — the Rocket" (35).
 
-Every file above is transcribed **in full**. Partially transcribed files are
+Every file here is transcribed **in full**. Partially transcribed files are
 not published: a partial transcription reads as a complete text with the
 middle silently missing, which is the worst kind of error in an archival
 edition.

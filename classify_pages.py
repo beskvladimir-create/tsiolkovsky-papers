@@ -14,10 +14,19 @@ Measured per scan:
   regular   regularity of line spacing, 1 = perfectly even (typescript)
   contrast  spread of brightness; low means a faded page
 
-Output is a CSV. Thresholds are then chosen by looking at a sample rather than
-assumed: over fond 555, `regular > 0.8` with at least 10 lines separates
-typescript reliably, while the band between 0.65 and 0.8 turns out to be neat
-handwriting, not print.
+Output is a CSV.
+
+SUPERSEDED FOR CLASSIFICATION. The `regular` metric here does not separate
+typescript from handwriting, and the threshold this file once documented was
+wrong. Neat cursive is as evenly spaced as type, and typescript with paragraph
+indents looks irregular, so the rule misclassified 29% of the fond and
+understated the share of typescript nearly threefold. It was caught by scoring
+a transcription against a published edition, not by inspecting the metric.
+
+Use `typescript_features.py` and `reclassify.py` instead; the deciding feature
+is the variation in ink-run lengths along a line, validated against
+`labelled_pages.csv`. The metrics below are still used for ink coverage, line
+count and contrast, which are sound.
 """
 import csv
 import os
