@@ -14,6 +14,19 @@ clears a threshold. The threshold is deliberately low, because at poor reading
 quality even identical text scores only moderately, while unrelated sheets
 score distinctly lower.
 
+A sheet counts as handwritten only if the transcription of it is uncertain
+enough to have come from a hand. The image feature alone is not sufficient:
+carbon copies and faded typescript raise the variation in ink runs and are
+classified as handwriting, and a pair of two typed sheets agrees almost
+perfectly, which inflates the very number this script exists to measure. The
+share of uncertainty marks the model left is an independent check, since it
+comes from the reading rather than from the image: over the corpus typed sheets
+carry 0.5 such marks per hundred words and handwritten ones 3.9. Sheets below
+MIN_UNCERTAIN are dropped as typescript in disguise.
+
+This filter selects the harder half of the handwriting, so the agreement it
+reports is a floor rather than an average.
+
 What matters is not only the share of matching words but the length of the runs
 that match. Aligning long texts depends on long verbatim anchors, and if the
 longest run is short, redactions cannot be collated word by word at all. That
@@ -32,12 +45,22 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from compare_variants import read_sheets, clean, fold
 
-MIN_WORDS = 40    # short sheets give unstable similarity
-MIN_RATIO = 0.25  # below this a pair is treated as unrelated
+MIN_WORDS = 40       # short sheets give unstable similarity
+MIN_RATIO = 0.25     # below this a pair is treated as unrelated
+MIN_UNCERTAIN = 0.02 # uncertainty marks per word below which a sheet reads as typed
 
 
 def toks(t):
     return [w for w in (fold(x).strip() for x in clean(t).split()) if w]
+
+
+def uncertainty(raw):
+    """Marks of doubt per word, as the model left them on this sheet."""
+    w = len(raw.split())
+    if w < 30:
+        return None
+    n = raw.count("[?]") + len(re.findall(r"\[неразборчиво", raw))
+    return n / w
 
 
 def page_class():
@@ -62,7 +85,13 @@ def main():
             if len(t) < MIN_WORDS:
                 continue
             c = cls.get((delo, k))
-            (hand if c == "hand" else typed if c == "typed" else []).append((k, t))
+            if c == "hand":
+                u = uncertainty(v)
+                if u is None or u < MIN_UNCERTAIN:
+                    continue          # reads like typescript, whatever the image says
+                hand.append((k, t))
+            elif c == "typed":
+                typed.append((k, t))
         if not hand or not typed:
             continue
         for hk, ht in hand:

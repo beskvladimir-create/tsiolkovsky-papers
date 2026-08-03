@@ -31,8 +31,8 @@ This repository closes the first of those gaps.
 | `title_en.csv` | **English translations of all 2,019 file descriptions**, beside the Russian original, which stays the citable record |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
 | `priority_bolide.csv` | The 1934 bolide correspondence: 221 files, 970 sheets |
-| `corpus/` | **Transcriptions**, one file per archival file. 98 files, 4,066 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
-| `reading_calibration.csv` | 400 manuscript/typescript pairs of one text, with the agreement of the two readings — the noise floor for any textual comparison |
+| `corpus/` | **Transcriptions**, one file per archival file. 190 files, 4,898 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
+| `reading_calibration.csv` | 294 manuscript/typescript pairs of one text, with the agreement of the two readings — the noise floor for any textual comparison |
 | Pipeline | Retrieval, page classification, transcription and scoring — the code that produced the above and can reproduce it |
 
 The catalogue is released **CC0**; the code is **MIT**.
@@ -119,8 +119,26 @@ there to the classifier.
 The replacement uses the variation in ink-run lengths along a line: typed
 characters stand separately and are alike, cursive letters join into long
 strokes of uneven length. The threshold is 0.81, and it classifies all 19
-hand-labelled pages in `labelled_pages.csv` correctly. Nineteen labels is a
-small validation set and the figure should be read as such.
+hand-labelled pages in `labelled_pages.csv` correctly.
+
+**Nineteen labels turned out to be far too few, and the figures above carry an
+error of roughly one sheet in five.** Once part of the fond had been
+transcribed a second and independent signal became available: the share of
+uncertainty marks a transcription carries, which comes from reading the page
+rather than from measuring its ink, and which separates the classes at 0.5
+marks per hundred words on typescript against 3.9 on handwriting. Scored
+against it over 4,675 transcribed sheets, on a half held out from any fitting,
+the rule is **80% accurate**, where guessing the commoner class gives 54%.
+
+The errors run both ways and inspection settles which signal is right. A sheet
+the rule calls handwriting opens "ТРУДЫ О КОСМИЧЕСКОЙ РАКЕТЕ /1903-1927 г./"
+with typewriter slashes and a printed page number: carbon copies and faded
+typescript raise the variation in ink runs and pass for a hand. A sheet it
+calls typescript carries pre-reform orthography, a struck-out word and a
+marginal insertion. Refitting on 4,675 sheets instead of 19 moves the threshold
+from 0.81 to 0.827 and gains nothing, and no pair of the measured image
+features beats the best single one, so the ceiling is in the image rather than
+in the rule. `refit_classifier.py` reproduces this.
 
 **Legibility.** A reading test across four page types of file 33 put confident
 legibility at 75–85% on pages of running text — covers and headings read
@@ -183,23 +201,33 @@ dates firm. The 1st variant cannot be cited as the earlier one.
 autograph and as a typed copy in the same file. Comparing our transcription of
 the one against our transcription of the other isolates the reading error
 exactly, because the source and the pipeline are identical and only the
-difficulty of the page differs. `calibrate_reading.py` finds 400 such pairs
-across 31 files:
+difficulty of the page differs. `calibrate_reading.py` finds 294 such pairs across 27 files. A sheet counts as
+handwritten only if its transcription is uncertain enough to have come from a
+hand: without that filter the classifier's errors put typescript on both sides
+of a pair, two typed readings agree almost perfectly, and the figure is
+inflated by exactly the material it is meant to exclude.
 
-| ink_cv of the handwritten sheet | Agreement of the two readings | Longest verbatim run |
-| --- | ---: | ---: |
-| 0.81–1.0 (at the threshold) | 75% | 31 words |
-| 1.0–1.3 | 55% | 15 |
-| 1.3–1.7 | 46% | 15 |
-| 1.7+ (unmistakably hand) | 38% | 14 |
+Over those pairs two readings of one handwritten page agree on a median **37%**
+of words, and the longest run on which they agree verbatim is a median of **12
+words**; on 31% of pairs no run reaches ten. Broken out by `ink_cv` the figures
+are flat — 37%, 39%, 36%, 36% across its range — so how unmistakably
+handwritten a page looks does not predict how well it reads.
 
-Two consequences. The classifier is confirmed by a second, independent signal:
-agreement falls steadily as `ink_cv` rises, on 400 pairs rather than the 19
-hand labels. And textual comparison of two handwritten redactions is out of
-reach at this reading quality — the two variants of *Kosmicheskiy korabl'*
-share 19% of their words, which is *below* the rate at which two readings of
-one and the same page agree. `compare_variants.py` therefore reads this floor
-back and reports nothing when the observed similarity fails to clear it.
+**The estimate is validated against ground truth.** Two files carry an
+autograph, a typed copy and a published edition of the same text, so accuracy
+and estimate can be had for the same page. Over 55 pairs the estimate is 35%
+against a true 34%, unbiased to within a percentage point, with a rank
+correlation of 0.67 (t = 6.6, p < 0.001). Restricted to pairs where the printed
+edition is demonstrably a faithful witness to the archival copy, the
+correlation is 0.92 over 32 pairs and 0.97 over the 17 cleanest, with no bias.
+`validate_calibration.py` reproduces this.
+
+The practical consequence is that textual comparison of two handwritten
+redactions is out of reach at this reading quality: the two variants of
+*Kosmicheskiy korabl'* share 19% of their words, which is *below* the rate at
+which two readings of one and the same page agree. `compare_variants.py` reads
+this floor back and reports nothing when the observed similarity fails to clear
+it.
 
 ## Contents
 
@@ -264,8 +292,8 @@ measured against published texts rather than asserted.
 
 ## What comes next
 
-- The 1934 bolide correspondence: 970 scans, 221 files, queued
-- The rest of the fond: 46,942 scans not yet transcribed
+- The 1934 bolide correspondence: 970 scans, 221 files, over half transcribed
+- The rest of the fond: 46,110 scans not yet transcribed
 - English translations of the principal works
 - A paper describing the method
 
