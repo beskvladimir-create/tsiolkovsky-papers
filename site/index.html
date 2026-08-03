@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фонд 555. Архив К. Э. Циолковского</title>
+<meta name="description" content="Машиночитаемый каталог личного архива К. Э. Циолковского: 2019 дел, 51 008 сканов, датировка, расшифровки.">
+<style>
+:root{
+  --bg:#fbfaf7; --fg:#1a1a1a; --dim:#6b6660; --line:#ddd8d0;
+  --card:#fff; --accent:#7a3b12; --hand:#b5651d; --typed:#4a6fa5;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#15140f; --fg:#e8e4dc; --dim:#948d82; --line:#2f2c26;
+        --card:#1d1b16; --accent:#d99a5e; --hand:#d99a5e; --typed:#7fa6d9;}
+}
+:root[data-theme=light]{--bg:#fbfaf7;--fg:#1a1a1a;--dim:#6b6660;--line:#ddd8d0;
+  --card:#fff;--accent:#7a3b12;--hand:#b5651d;--typed:#4a6fa5;}
+:root[data-theme=dark]{--bg:#15140f;--fg:#e8e4dc;--dim:#948d82;--line:#2f2c26;
+  --card:#1d1b16;--accent:#d99a5e;--hand:#d99a5e;--typed:#7fa6d9;}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.55 Georgia,'Iowan Old Style',serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{border-bottom:1px solid var(--line);padding:44px 0 30px}
+h1{font-size:30px;margin:0 0 6px;font-weight:normal;letter-spacing:-.01em}
+.sub{color:var(--dim);font-size:15px;margin:0 0 20px;max-width:64ch}
+.stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:22px}
+.stat b{display:block;font-size:24px;font-weight:normal;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+
+.controls{position:sticky;top:0;background:var(--bg);padding:16px 0 12px;
+  border-bottom:1px solid var(--line);z-index:5}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+input[type=search],select{font:inherit;font-size:14px;padding:8px 11px;
+  border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)}
+input[type=search]{flex:1;min-width:220px}
+.count{color:var(--dim);font-size:13px;margin-left:auto;font-variant-numeric:tabular-nums}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 40px}
+th{text-align:left;font-weight:normal;color:var(--dim);font-size:12px;
+  text-transform:uppercase;letter-spacing:.06em;padding:12px 10px;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:hover td{background:var(--card)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--dim)}
+.ttl{max-width:44ch}
+.dates{white-space:nowrap;font-variant-numeric:tabular-nums}
+.conj{color:var(--dim)}
+a{color:var(--accent)}
+a.src{text-decoration:none;border-bottom:1px dotted var(--accent)}
+.bar{display:inline-block;width:52px;height:7px;border-radius:4px;
+  background:var(--typed);position:relative;overflow:hidden;vertical-align:middle}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--hand)}
+.mixlabel{font-size:11px;color:var(--dim);margin-left:6px;font-variant-numeric:tabular-nums}
+.more{display:block;margin:0 auto 60px;padding:11px 22px;font:inherit;font-size:14px;
+  background:var(--card);color:var(--fg);border:1px solid var(--line);
+  border-radius:7px;cursor:pointer}
+footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--dim);font-size:13px}
+footer a{color:var(--dim)}
+.legend{font-size:12px;color:var(--dim);margin:10px 0 0}
+@media (max-width:640px){
+  h1{font-size:24px} .hidesm{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Фонд 555. Личный архив К. Э. Циолковского</h1>
+  <p class="sub">Архив Российской академии наук отсканировал фонд и выложил
+  изображения, но каталога, по которому можно спрашивать, у него нет: дела
+  открываются поодиночке по числовому адресу. Здесь тот же фонд целиком, в
+  виде таблицы, с датировкой каждого дела и с расшифровками там, где они
+  готовы.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div class="controls">
+  <div class="row">
+    <input type="search" id="q" placeholder="Поиск по названию или номеру дела" autocomplete="off">
+    <select id="opis"><option value="">Все описи</option></select>
+    <select id="decade"><option value="">Все годы</option></select>
+    <select id="only">
+      <option value="">Всё</option>
+      <option value="txt">Только с расшифровкой</option>
+      <option value="hand">Преимущественно рукопись</option>
+      <option value="typed">Преимущественно машинопись</option>
+    </select>
+    <span class="count" id="count"></span>
+  </div>
+  <p class="legend">Полоса в столбце «Тип» показывает долю рукописных листов
+  в деле: <span class="bar" style="width:26px"><i style="width:100%"></i></span>
+  автограф, <span class="bar" style="width:26px"><i style="width:0"></i></span>
+  машинопись. Даты в квадратных скобках проставлены архивистами по содержанию,
+  а не автором.</p>
+</div>
+
+<div class="tablewrap">
+<table>
+  <thead><tr>
+    <th>Опись</th><th>Дело</th><th>Название</th><th>Даты</th>
+    <th class="hidesm">Листов</th><th class="hidesm">Тип</th><th>Ссылки</th>
+  </tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+</div>
+<button class="more" id="more" hidden>Показать ещё</button>
+
+<footer>
+  <p>Источник: <a href="https://www.ras.ru/ktsiolkovskyarchive/">Архив РАН, фонд 555</a>.
+  Сканы принадлежат архиву и здесь не воспроизводятся.
+  Каталог опубликован под CC0, код под MIT:
+  <a href="https://github.com/beskvladimir-create/tsiolkovsky-papers">репозиторий</a>,
+  <a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>
+  <p>Расшифровки machine-generated, с явной пометкой неуверенных чтений, и по
+  рукописям заметно менее точны, чем по машинописи. Измеренные цифры и границы
+  применимости описаны в репозитории. Проект независимый, архив к нему
+  отношения не имеет.</p>
+  <p>Владимир Бескоровайный, 2026.</p>
+</footer>
+</div>
+
+<script>
+const PAGE = 200;
+let DATA = null, view = [], shown = 0;
+
+const el = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+fetch('catalog.json').then(r => r.json()).then(d => {
+  DATA = d;
+  el('stats').innerHTML = [
+    [d.files.toLocaleString('ru'), 'дел'],
+    [d.scans.toLocaleString('ru'), 'сканов'],
+    [d.dated.toLocaleString('ru'), 'с датировкой'],
+    [d.transcribed.toLocaleString('ru'), 'расшифровано'],
+  ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+
+  const names = {'1':'Опись 1','1а':'Опись 1А','2':'Опись 2','3':'Опись 3','4':'Опись 4'};
+  [...new Set(d.rows.map(r => r[0]))].sort().forEach(o => {
+    el('opis').insertAdjacentHTML('beforeend',
+      `<option value="${esc(o)}">${esc(names[o] || 'Опись ' + o)}</option>`);
+  });
+  const decs = [...new Set(d.rows.map(r => r[4]).filter(Boolean).map(y => Math.floor(y/10)*10))];
+  decs.sort((a,b) => a-b).forEach(x => {
+    el('decade').insertAdjacentHTML('beforeend', `<option value="${x}">${x}-е</option>`);
+  });
+  apply();
+});
+
+function apply() {
+  const q = el('q').value.trim().toLowerCase();
+  const o = el('opis').value, dc = el('decade').value, only = el('only').value;
+  view = DATA.rows.filter(r => {
+    if (o && r[0] !== o) return false;
+    if (dc && (!r[4] || Math.floor(r[4]/10)*10 !== +dc)) return false;
+    if (only === 'txt' && !r[11]) return false;
+    if (only === 'hand' && !(r[9] >= 60)) return false;
+    if (only === 'typed' && !(r[9] >= 0 && r[9] < 40)) return false;
+    if (q && !(r[2].toLowerCase().includes(q) || String(r[1]).toLowerCase() === q))
+      return false;
+    return true;
+  });
+  el('count').textContent = view.length.toLocaleString('ru') + ' из '
+    + DATA.rows.length.toLocaleString('ru');
+  el('rows').innerHTML = '';
+  shown = 0;
+  render();
+}
+
+function render() {
+  const part = view.slice(shown, shown + PAGE);
+  el('rows').insertAdjacentHTML('beforeend', part.map(row).join(''));
+  shown += part.length;
+  el('more').hidden = shown >= view.length;
+  el('more').textContent = `Показать ещё ${Math.min(PAGE, view.length - shown)}`;
+}
+
+function row(r) {
+  const [opis, delo, title, dates, , conj, pages, material, repro, cls, pid, txt] = r;
+  const src = `https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=${pid}`;
+  const links = [`<a class="src" href="${src}" rel="noopener">сканы</a>`];
+  if (txt) links.push(`<a class="src" href="https://github.com/beskvladimir-create/tsiolkovsky-papers/blob/main/corpus/${txt}.md" rel="noopener">текст</a>`);
+  const mix = cls < 0 ? '<span class="mixlabel">—</span>'
+    : `<span class="bar"><i style="width:${cls}%"></i></span><span class="mixlabel">${cls}%</span>`;
+  const d = dates ? (conj ? `<span class="conj">${esc(dates)}</span>` : esc(dates)) : '';
+  const meta = [material, repro].filter(Boolean).join(', ');
+  return `<tr>
+    <td class="num">${esc(opis)}</td>
+    <td class="num">${esc(delo)}</td>
+    <td class="ttl">${esc(title)}${meta ? `<br><span class="mixlabel">${esc(meta)}</span>` : ''}</td>
+    <td class="dates">${d}</td>
+    <td class="num hidesm">${pages}</td>
+    <td class="hidesm">${mix}</td>
+    <td>${links.join(' · ')}</td>
+  </tr>`;
+}
+
+['q','opis','decade','only'].forEach(id =>
+  el(id).addEventListener('input', apply));
+el('more').addEventListener('click', render);
+</script>
+</body>
+</html>
