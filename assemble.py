@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """
-Сборка транскрипций: отдельные файлы по сканам -> markdown по делу.
+Assembling transcriptions: one file per scan -> one markdown per archival file.
 
-Ночной прогон кладёт по одному .txt на скан в data/transcripts_raw. Здесь они
-собираются в готовый документ на дело: шапка с архивными данными из каталога,
-ссылка на источник, оговорка о методе, дальше листы по порядку.
+The nightly run drops one .txt per scan into data/transcripts_raw. Here they
+are gathered into a finished document per archival file: a header with the
+archival particulars from the catalogue, a link to the source, a note on the
+method, then the sheets in order.
 
-Собираются только дела, расшифрованные полностью: частично расшифрованное
-дело выглядит как законченный текст с молча выпавшей серединой, а это худший
-вид ошибки в архивной публикации.
+Only files transcribed in full are assembled. A partly transcribed file reads
+as a complete text with the middle silently missing, and that is the worst kind
+of error an archival publication can carry.
 
-    python3 assemble.py                 собрать все готовые
-    python3 assemble.py --list          что готово, что нет
+The assembled documents are in Russian throughout, since they are the archival
+texts themselves; only this program is not.
+
+    python3 assemble.py                 assemble everything ready
+    python3 assemble.py --list          what is ready and what is not
 """
 import argparse
 import csv
@@ -26,11 +30,13 @@ BASE = "https://www.ras.ru/ktsiolkovskyarchive"
 
 def catalog():
     return {(r["opis_code"], r["delo"]): r
-            for r in csv.DictReader(open(os.path.join(ROOT, "catalog.csv"), encoding="utf-8"))}
+            for r in csv.DictReader(
+                open(os.path.join(ROOT, "catalog.csv"), encoding="utf-8"))}
 
 
 def split_fields(raw):
-    """Из слитного «Название» портала достаёт заголовок и служебные поля."""
+    """Pull the title and the descriptive fields out of the portal's run-on
+    "Название" string. The field names are the portal's own Russian markup."""
     s = re.sub(r"\s+", " ", raw or "").strip()
     out = {}
     for key, pat in (
@@ -40,13 +46,14 @@ def split_fields(raw):
     ):
         m = re.search(pat, s, re.I)
         out[key] = m.group(1).strip(" .;") if m else ""
-    out["title"] = re.split(r"Вид материала:|Способ воспроизведения:|Крайние даты:|Языки:",
-                            s, maxsplit=1)[0].strip(" .;")
+    out["title"] = re.split(
+        r"Вид материала:|Способ воспроизведения:|Крайние даты:|Языки:",
+        s, maxsplit=1)[0].strip(" .;")
     return out
 
 
 def scan_state(cat):
-    """Для каждого дела: сколько сканов расшифровано из скольких."""
+    """For each archival file: how many scans are transcribed, out of how many."""
     state = {}
     if not os.path.isdir(RAW):
         return state
@@ -68,7 +75,7 @@ def scan_state(cat):
     return state
 
 
-def build(code, num, row, txts, dd):
+def build(num, row, txts, dd):
     f = split_fields(row.get("name", ""))
     head = [
         f"# Фонд 555, {row['opis'].lower()}, дело {num.lstrip('0')}",
@@ -111,13 +118,14 @@ def main():
     partial = {k: v for k, v in state.items() if k not in ready}
 
     if args.list:
-        print(f"  готовы целиком: {len(ready)}")
+        print(f"  complete: {len(ready)}")
         for (c, n), (a, b, row, _, _) in sorted(ready.items()):
-            print(f"    {row['opis']} д.{n.lstrip('0'):<6} {a}/{b}  {row['name'][:56]}")
+            print(f"    {row['opis']} no.{n.lstrip('0'):<6} {a}/{b}  "
+                  f"{row['name'][:56]}")
         if partial:
-            print(f"  в работе: {len(partial)}")
+            print(f"  in progress: {len(partial)}")
             for (c, n), (a, b, row, _, _) in sorted(partial.items()):
-                print(f"    {row['opis']} д.{n.lstrip('0'):<6} {a}/{b}")
+                print(f"    {row['opis']} no.{n.lstrip('0'):<6} {a}/{b}")
         return
 
     made = 0
@@ -126,10 +134,10 @@ def main():
         os.makedirs(out_dir, exist_ok=True)
         p = os.path.join(out_dir, f"delo_{n}.md")
         with open(p, "w", encoding="utf-8") as fh:
-            fh.write(build(c, n, row, txts, dd))
+            fh.write(build(n, row, txts, dd))
         made += 1
-        print(f"  {p}  ({a} листов, {os.path.getsize(p)//1024} КБ)")
-    print(f"\n  собрано дел: {made}; не готовы: {len(partial)}")
+        print(f"  {p}  ({a} sheets, {os.path.getsize(p)//1024} KB)")
+    print(f"\n  assembled: {made}; not yet complete: {len(partial)}")
 
 
 if __name__ == "__main__":

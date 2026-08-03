@@ -37,20 +37,28 @@ and ѳ. Nothing is silently modernised.
 This is a **machine transcription with uncertainty marked**, not a scholarly
 edition. It has not been checked by a human against the scans.
 
-Across these 1,238 scans there are **8,421 uncertainty marks** — about seven
+Across these 4,066 scans there are **27,393 uncertainty marks** — about seven
 per scan. That is the point of the method rather than a defect of it: a
 transcription whose doubtful places are visible can be checked and corrected
 where it matters, while one that reads smoothly because uncertain words were
 invented cannot be checked at all.
 
-For the measured accuracy figure and how it was obtained, see the main README
-and `validate.py`. In short: 98.1% at character level against a published
-edition, measured on typescript. The equivalent figure for handwriting has
-not yet been established and will be lower.
+For the measured accuracy figures and how they were obtained, see the main
+README and `validate.py`. In short, against published editions: **98.1% at
+character level on typescript, 81.1% on handwriting** once orthography is
+folded onto modern spelling.
+
+That gap sets a limit worth stating plainly. Two independent readings of one
+and the same handwritten page agree on 38–55% of words, and the longest
+verbatim run they share is about fifteen words
+(`calibrate_reading.py`, 400 pairs). So these files carry the substance of a
+page reliably, but they will not support word-level collation of two
+manuscripts against each other: at that scale the differences between two
+readings outweigh the differences between two texts.
 
 ## Authorial deletions
 
-These files contain **2,394 passages struck out by Tsiolkovsky himself**,
+These files contain **3,216 passages struck out by Tsiolkovsky himself**,
 preserved as `~~...~~`. Published editions print what survived the author's
 pen; this shows what did not.
 

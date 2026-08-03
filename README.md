@@ -23,8 +23,11 @@ This repository closes the first of those gaps.
 | | |
 | --- | --- |
 | `catalog.csv` / `catalog.json` | Every file in the fond: inventory, archival file number, title, material type, reproduction method, dates, scan count, link to the source page. **2,019 files, complete.** |
+| `delo_dates.csv` | **The dating of every file**, taken from the archive's own cards: opening and closing year, the conjectural-dating flag, material type and reproduction method. 2,019 files, 1,971 dated, 1878–1935 |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
-| `corpus/` | **Transcriptions**, one file per archival file. 8 files, 1,238 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
+| `priority_bolide.csv` | The 1934 bolide correspondence: 221 files, 970 sheets |
+| `corpus/` | **Transcriptions**, one file per archival file. 98 files, 4,066 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
+| `reading_calibration.csv` | 400 manuscript/typescript pairs of one text, with the agreement of the two readings — the noise floor for any textual comparison |
 | Pipeline | Retrieval, page classification, transcription and scoring — the code that produced the above and can reproduce it |
 
 The catalogue is released **CC0**; the code is **MIT**.
@@ -79,7 +82,7 @@ are page images, which is a different question from machine-readable text and
 has not been assessed.
 
 Both variants of *Kosmicheskiy korabl'* are now transcribed in full and are in
-[`corpus/`](corpus/), together with six other files of the rocketry core.
+[`corpus/`](corpus/), together with the rest of the rocketry core.
 
 ## What has been measured
 
@@ -153,6 +156,46 @@ accuracy and thirty of word accuracy, because it invented pre-reform letters
 the page does not carry — which is how the classifier error above came to
 light.
 
+**What the dating shows.** The archive's portal carries an opening and closing
+date on every file's card, but the field was not collected until now, and a
+year appears in only 46 of the 2,019 file descriptions themselves.
+`fetch_dates.py` collects it; `analyze_dates.py` reads it. Full report:
+[`fond-in-dates.md`](fond-in-dates.md), also in
+[Russian](fond-in-dates.ru.md).
+
+Of his own work, opis 1, 48% of the files fall in the 1930s and 34% in the
+1920s: 82% of the fond's own-work files were written in the last eighteen
+years of a working life of nearly sixty. The last four years, 1932–1935, hold
+40% of the files but only 27% of the sheets — late files are markedly shorter,
+so the work does not stop, it changes form.
+
+The variant numbers in the archival description are **not** chronological. Of
+the four works held as a numbered pair, «Ступени человечества и преобразование
+земли» has its second variant dated 1.09.1920 and its first 19.10.1920, both
+dates firm. The 1st variant cannot be cited as the earlier one.
+
+**How far reading errors reach.** Part of the fond holds one text twice, as an
+autograph and as a typed copy in the same file. Comparing our transcription of
+the one against our transcription of the other isolates the reading error
+exactly, because the source and the pipeline are identical and only the
+difficulty of the page differs. `calibrate_reading.py` finds 400 such pairs
+across 31 files:
+
+| ink_cv of the handwritten sheet | Agreement of the two readings | Longest verbatim run |
+| --- | ---: | ---: |
+| 0.81–1.0 (at the threshold) | 75% | 31 words |
+| 1.0–1.3 | 55% | 15 |
+| 1.3–1.7 | 46% | 15 |
+| 1.7+ (unmistakably hand) | 38% | 14 |
+
+Two consequences. The classifier is confirmed by a second, independent signal:
+agreement falls steadily as `ink_cv` rises, on 400 pairs rather than the 19
+hand labels. And textual comparison of two handwritten redactions is out of
+reach at this reading quality — the two variants of *Kosmicheskiy korabl'*
+share 19% of their words, which is *below* the rate at which two readings of
+one and the same page agree. `compare_variants.py` therefore reads this floor
+back and reports nothing when the observed similarity fails to clear it.
+
 ## Contents
 
 | File | What it does |
@@ -167,6 +210,10 @@ light.
 | `validate.py` | Scores a transcription against a published text on Russian Wikisource |
 | `keeper.sh` | Restarts the downloader after the machine sleeps |
 | `build_queue.py` | Builds the transcription queue and routes each scan to a model by page type |
+| `fetch_dates.py` | Collects the dating of every file from the archive's portal |
+| `analyze_dates.py` | Reads the dating; emits the report in English or Russian |
+| `calibrate_reading.py` | Measures the reading error on texts the fond holds twice |
+| `compare_variants.py` | Collates two redactions, and refuses to when reading quality cannot support it |
 | `night_run.sh` | Runs the queue overnight and stops at a fixed hour, so the day's quota stays free |
 | `assemble.py` | Assembles per-scan output into one document per archival file |
 | `sync.sh` | Copies the published scripts into the working directory, so the two do not drift |
@@ -211,9 +258,8 @@ measured against published texts rather than asserted.
 
 ## What comes next
 
-- The remaining priority files: 1,238 of 4,046 scans are done
-- An accuracy figure for handwriting, measured the same way as the one for
-  typescript — against a manuscript whose text is also published
+- The 1934 bolide correspondence: 970 scans, 221 files, queued
+- The rest of the fond: 46,942 scans not yet transcribed
 - English translations of the principal works
 - A paper describing the method
 

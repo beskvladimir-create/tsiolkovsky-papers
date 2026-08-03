@@ -1,31 +1,34 @@
 #!/usr/bin/env python3
 """
-Признаки, различающие машинопись и рукопись.
+The features that tell typescript from handwriting.
 
-Регулярность межстрочного шага для этого не годится: аккуратный курсив даёт
-такой же ровный шаг, что и печать. Разметка это показала прямо.
+The regularity of line spacing will not do it: neat cursive gives a line pitch
+as even as print. Labelling the sheets by hand showed that outright.
 
-Различает другое.
+What does separate them is this.
 
-1. ШАГ ЛИТЕР. Пишущая машинка моноширинная: каждый знак встаёт на сетку с
-   постоянным шагом. Если взять колоночную проекцию чернил внутри строки и
-   посчитать автокорреляцию, у машинописи будет резкий пик на шаге литеры.
-   Связный курсив такой сетки не имеет, пик размазан.
+1. CHARACTER PITCH. A typewriter is monospaced: every character lands on a grid
+   at a fixed step. Take the column projection of the ink within a line and
+   autocorrelate it, and typescript shows a sharp peak at the character pitch.
+   Joined-up cursive has no such grid, and the peak is smeared out.
 
-2. ДЛИНА СВЯЗНЫХ ШТРИХОВ. В курсиве буквы соединены, и чернильные отрезки
-   вдоль строки длинные. В машинописи знаки стоят раздельно, отрезки короткие
-   и однородные, а промежутки между ними одинаковые.
+2. LENGTH OF CONNECTED STROKES. In cursive the letters are joined, so the ink
+   runs along a line are long. In typescript the characters stand apart, the
+   runs are short and uniform, and the gaps between them are all alike.
 
-3. РОВНОСТЬ ВЫСОТЫ. Печатные знаки сидят в фиксированной строке; у рукописи
-   выносные элементы гуляют, и толщина полосы текста меняется от строки к
-   строке сильнее.
+3. EVENNESS OF HEIGHT. Printed characters sit within a fixed line; in
+   handwriting the ascenders and descenders wander, and the thickness of the
+   band of text varies more from line to line.
 
-Ни один признак сам по себе не решает, поэтому считаем все и смотрим вместе.
+No single feature settles it, so all of them are computed and read together.
+The decision made from them lives in reclassify.py, and it is validated against
+labelled_pages.csv.
 """
 import numpy as np
 from PIL import Image
 
-WIDTH = 1200  # шире, чем в classify_pages: шаг литеры мелкий, его легко потерять
+WIDTH = 1200  # wider than in classify_pages: the character pitch is fine and
+              # easily lost at lower resolution
 
 
 def text_bands(mask, min_h=3):
@@ -45,10 +48,10 @@ def text_bands(mask, min_h=3):
 
 
 def pitch_score(col):
-    """Сила периодичности колоночной проекции строки.
+    """How strongly periodic the column projection of a line is.
 
-    Возвращает (сила пика, шаг в пикселях). Автокорреляция считается на
-    центрированном сигнале, ищется максимум в диапазоне шага 4..40 px.
+    Returns (peak strength, pitch in pixels). The autocorrelation is taken on
+    the centred signal, and the maximum is sought over pitches of 4 to 40 px.
     """
     x = col - col.mean()
     if x.std() < 1e-6 or len(x) < 60:
@@ -66,7 +69,7 @@ def pitch_score(col):
 
 
 def run_stats(row_mask):
-    """Длины чернильных отрезков и промежутков вдоль строки."""
+    """Lengths of the ink runs and of the gaps between them along a line."""
     d = np.diff(row_mask.astype(np.int8))
     starts = np.flatnonzero(d == 1) + 1
     ends = np.flatnonzero(d == -1) + 1
@@ -126,16 +129,16 @@ def features(path):
     pit_valid = pit[pit > 0]
 
     return {
-        # сила периодичности: у машинописи высокая и одинаковая по строкам
+        # strength of the periodicity: high and consistent across typed lines
         "pitch_peak": round(float(np.median(peaks)), 3),
-        # согласие строк о шаге литеры: у машинописи шаг один и тот же
+        # how far the lines agree on the pitch: one and the same for typescript
         "pitch_agree": round(float(1.0 - (pit_valid.std() / pit_valid.mean()))
                              if len(pit_valid) >= 3 and pit_valid.mean() > 0 else 0.0, 3),
-        # разброс длин чернильных отрезков: у курсива больше (связные штрихи)
+        # spread of ink-run lengths: larger for cursive, whose strokes join up
         "ink_cv": round(float(np.median(ink_cv)) if ink_cv else 0.0, 3),
-        # разброс промежутков между знаками: у машинописи мал
+        # spread of the gaps between characters: small for typescript
         "gap_cv": round(float(np.median(gap_cv)) if gap_cv else 0.0, 3),
-        # ровность высоты полос текста
+        # evenness of the height of the bands of text
         "height_cv": round(float(heights.std() / heights.mean())
                            if heights.mean() > 0 else 0.0, 3),
         "bands": len(bands),
