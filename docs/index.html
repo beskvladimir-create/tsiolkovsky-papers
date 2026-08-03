@@ -23,12 +23,19 @@
 body{margin:0;background:var(--bg);color:var(--fg);
   font:16px/1.55 Georgia,'Iowan Old Style',serif;}
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
-header{border-bottom:1px solid var(--line);padding:44px 0 30px}
-h1{font-size:30px;margin:0 0 6px;font-weight:normal;letter-spacing:-.01em}
+header{border-bottom:1px solid var(--line);padding:44px 0 30px;position:relative}
+h1{font-size:30px;margin:0 0 6px;font-weight:normal;letter-spacing:-.01em;
+  max-width:80%}
 .sub{color:var(--dim);font-size:15px;margin:0 0 20px;max-width:64ch}
 .stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:22px}
 .stat b{display:block;font-size:24px;font-weight:normal;font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+
+.lang{position:absolute;top:44px;right:0;display:flex;border:1px solid var(--line);
+  border-radius:6px;overflow:hidden;background:var(--card)}
+.lang button{font:inherit;font-size:13px;padding:6px 12px;border:0;cursor:pointer;
+  background:transparent;color:var(--dim)}
+.lang button[aria-pressed=true]{background:var(--accent);color:var(--bg)}
 
 .controls{position:sticky;top:0;background:var(--bg);padding:16px 0 12px;
   border-bottom:1px solid var(--line);z-index:5}
@@ -62,95 +69,166 @@ footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--dim);fon
 footer a{color:var(--dim)}
 .legend{font-size:12px;color:var(--dim);margin:10px 0 0}
 @media (max-width:640px){
-  h1{font-size:24px} .hidesm{display:none}
+  h1{font-size:24px;max-width:100%;margin-top:34px} .hidesm{display:none}
+  .lang{top:0}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <h1>Фонд 555. Личный архив К. Э. Циолковского</h1>
-  <p class="sub">Архив Российской академии наук отсканировал фонд и выложил
-  изображения, но каталога, по которому можно спрашивать, у него нет: дела
-  открываются поодиночке по числовому адресу. Здесь тот же фонд целиком, в
-  виде таблицы, с датировкой каждого дела и с расшифровками там, где они
-  готовы.</p>
+  <div class="lang" id="lang">
+    <button data-l="ru" aria-pressed="true">Рус</button
+    ><button data-l="en" aria-pressed="false">Eng</button>
+  </div>
+  <h1 id="h1"></h1>
+  <p class="sub" id="sub"></p>
   <div class="stats" id="stats"></div>
 </header>
 
 <div class="controls">
   <div class="row">
-    <input type="search" id="q" placeholder="Поиск по названию или номеру дела" autocomplete="off">
-    <select id="opis"><option value="">Все описи</option></select>
-    <select id="decade"><option value="">Все годы</option></select>
-    <select id="only">
-      <option value="">Всё</option>
-      <option value="txt">Только с расшифровкой</option>
-      <option value="hand">Преимущественно рукопись</option>
-      <option value="typed">Преимущественно машинопись</option>
-    </select>
+    <input type="search" id="q" autocomplete="off">
+    <select id="opis"></select>
+    <select id="decade"></select>
+    <select id="only"></select>
     <span class="count" id="count"></span>
   </div>
-  <p class="legend">Полоса в столбце «Тип» показывает долю рукописных листов
-  в деле: <span class="bar" style="width:26px"><i style="width:100%"></i></span>
-  автограф, <span class="bar" style="width:26px"><i style="width:0"></i></span>
-  машинопись. Даты в квадратных скобках проставлены архивистами по содержанию,
-  а не автором.</p>
+  <p class="legend" id="legend"></p>
 </div>
 
 <div class="tablewrap">
 <table>
-  <thead><tr>
-    <th>Опись</th><th>Дело</th><th>Название</th><th>Даты</th>
-    <th class="hidesm">Листов</th><th class="hidesm">Тип</th><th>Ссылки</th>
-  </tr></thead>
+  <thead><tr id="head"></tr></thead>
   <tbody id="rows"></tbody>
 </table>
 </div>
-<button class="more" id="more" hidden>Показать ещё</button>
+<button class="more" id="more" hidden></button>
 
-<footer>
-  <p>Источник: <a href="https://www.ras.ru/ktsiolkovskyarchive/">Архив РАН, фонд 555</a>.
-  Сканы принадлежат архиву и здесь не воспроизводятся.
-  Каталог опубликован под CC0, код под MIT:
-  <a href="https://github.com/beskvladimir-create/tsiolkovsky-papers">репозиторий</a>,
-  <a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>
-  <p>Расшифровки machine-generated, с явной пометкой неуверенных чтений, и по
-  рукописям заметно менее точны, чем по машинописи. Измеренные цифры и границы
-  применимости описаны в репозитории. Проект независимый, архив к нему
-  отношения не имеет.</p>
-  <p>Владимир Бескоровайный, 2026.</p>
-</footer>
+<footer id="foot"></footer>
 </div>
 
 <script>
 const PAGE = 200;
-let DATA = null, view = [], shown = 0;
+const REPO = 'https://github.com/beskvladimir-create/tsiolkovsky-papers';
+let DATA = null, view = [], shown = 0, LANG = 'ru';
 
 const el = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+const T = {
+ ru: {
+  title: 'Фонд 555. Архив К. Э. Циолковского',
+  h1: 'Фонд 555. Личный архив К. Э. Циолковского',
+  sub: 'Архив Российской академии наук отсканировал фонд и выложил изображения, '
+     + 'но каталога, по которому можно спрашивать, у него нет: дела открываются '
+     + 'поодиночке по числовому адресу. Здесь тот же фонд целиком, в виде '
+     + 'таблицы, с датировкой каждого дела и с расшифровками там, где они готовы.',
+  stats: ['дел', 'сканов', 'с датировкой', 'расшифровано'],
+  search: 'Поиск по названию или номеру дела',
+  allOpis: 'Все описи', allYears: 'Все годы',
+  only: ['Всё', 'Только с расшифровкой', 'Преимущественно рукопись',
+         'Преимущественно машинопись'],
+  opisName: o => 'Опись ' + (o === '1а' ? '1А' : o),
+  decade: d => d + '-е',
+  of: (a, b) => `${a} из ${b}`,
+  head: ['Опись', 'Дело', 'Название', 'Даты', 'Листов', 'Тип', 'Ссылки'],
+  scans: 'сканы', text: 'текст',
+  more: n => `Показать ещё ${n}`,
+  legend: 'Полоса в столбце «Тип» показывает долю рукописных листов в деле: '
+        + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> автограф, '
+        + '<span class="bar" style="width:26px"><i style="width:0"></i></span> машинопись. '
+        + 'Даты в квадратных скобках проставлены архивистами по содержанию, а не автором.',
+  foot: `<p>Источник: <a href="https://www.ras.ru/ktsiolkovskyarchive/">Архив РАН, фонд 555</a>. `
+      + `Сканы принадлежат архиву и здесь не воспроизводятся. Каталог опубликован под CC0, `
+      + `код под MIT: <a href="${REPO}">репозиторий</a>, `
+      + `<a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>`
+      + `<p>Расшифровки machine-generated, с явной пометкой неуверенных чтений, и по `
+      + `рукописям заметно менее точны, чем по машинописи. Измеренные цифры и границы `
+      + `применимости описаны в репозитории. Проект независимый, архив к нему отношения `
+      + `не имеет.</p><p>Владимир Бескоровайный, 2026.</p>`,
+ },
+ en: {
+  title: 'Fond 555. The Tsiolkovsky Papers',
+  h1: 'Fond 555. The personal archive of K. E. Tsiolkovsky',
+  sub: 'The Archive of the Russian Academy of Sciences scanned the fond and put '
+     + 'the images online, but it has no catalogue you can query: files open one '
+     + 'at a time by numeric address. Here is the same fond whole, as a table, '
+     + 'with every file dated and with transcriptions where they are ready.',
+  stats: ['files', 'scans', 'dated', 'transcribed'],
+  search: 'Search by title or file number',
+  allOpis: 'All inventories', allYears: 'All years',
+  only: ['Everything', 'Transcribed only', 'Mostly handwritten',
+         'Mostly typewritten'],
+  opisName: o => 'Opis ' + (o === '1а' ? '1A' : o),
+  decade: d => d + 's',
+  of: (a, b) => `${a} of ${b}`,
+  head: ['Opis', 'File', 'Title', 'Dates', 'Sheets', 'Type', 'Links'],
+  scans: 'scans', text: 'text',
+  more: n => `Show ${n} more`,
+  legend: 'The bar under Type gives the share of handwritten sheets in a file: '
+        + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> autograph, '
+        + '<span class="bar" style="width:26px"><i style="width:0"></i></span> typescript. '
+        + 'Dates in square brackets were assigned by the archivists from the contents, '
+        + 'not written by the author. Titles and dates are given as the archive records '
+        + 'them, in Russian; the descriptions around them are glossed.',
+  foot: `<p>Source: <a href="https://www.ras.ru/ktsiolkovskyarchive/">Archive of the RAS, fond 555</a>. `
+      + `The scans belong to the archive and are not reproduced here. The catalogue is `
+      + `released CC0 and the code MIT: <a href="${REPO}">repository</a>, `
+      + `<a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>`
+      + `<p>The transcriptions are machine-generated with uncertain readings marked, and `
+      + `are markedly less accurate on handwriting than on typescript. The measured figures `
+      + `and the limits of use are described in the repository. This is an independent `
+      + `project, not affiliated with the archive.</p><p>Vladimir Beskorovainyi, 2026.</p>`,
+ },
+};
+
+const t = () => T[LANG];
+const nf = n => n.toLocaleString(LANG === 'ru' ? 'ru' : 'en');
+const vocab = (kind, v) => (LANG === 'en' && DATA.vocab[kind][v]) || v;
+
 fetch('catalog.json').then(r => r.json()).then(d => {
   DATA = d;
-  el('stats').innerHTML = [
-    [d.files.toLocaleString('ru'), 'дел'],
-    [d.scans.toLocaleString('ru'), 'сканов'],
-    [d.dated.toLocaleString('ru'), 'с датировкой'],
-    [d.transcribed.toLocaleString('ru'), 'расшифровано'],
-  ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
-
-  const names = {'1':'Опись 1','1а':'Опись 1А','2':'Опись 2','3':'Опись 3','4':'Опись 4'};
-  [...new Set(d.rows.map(r => r[0]))].sort().forEach(o => {
-    el('opis').insertAdjacentHTML('beforeend',
-      `<option value="${esc(o)}">${esc(names[o] || 'Опись ' + o)}</option>`);
-  });
-  const decs = [...new Set(d.rows.map(r => r[4]).filter(Boolean).map(y => Math.floor(y/10)*10))];
-  decs.sort((a,b) => a-b).forEach(x => {
-    el('decade').insertAdjacentHTML('beforeend', `<option value="${x}">${x}-е</option>`);
-  });
-  apply();
+  // Скобки обязательны: без них ?: съедает всё выражение, и сохранённый
+  // выбор «Eng» всё равно давал бы русский.
+  const saved = localStorage.getItem('lang');
+  LANG = ['ru', 'en'].includes(saved) ? saved
+       : ((navigator.language || '').startsWith('ru') ? 'ru' : 'en');
+  paint();
 });
+
+function paint() {
+  const s = t();
+  document.documentElement.lang = LANG;
+  document.title = s.title;
+  el('h1').textContent = s.h1;
+  el('sub').textContent = s.sub;
+  el('legend').innerHTML = s.legend;
+  el('foot').innerHTML = s.foot;
+  el('q').placeholder = s.search;
+  el('head').innerHTML = s.head
+    .map((h, i) => `<th${i === 4 || i === 5 ? ' class="hidesm"' : ''}>${esc(h)}</th>`).join('');
+  el('stats').innerHTML = [DATA.files, DATA.scans, DATA.dated, DATA.transcribed]
+    .map((n, i) => `<div class="stat"><b>${nf(n)}</b><span>${esc(s.stats[i])}</span></div>`)
+    .join('');
+  [...el('lang').children].forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
+
+  const keep = {opis: el('opis').value, decade: el('decade').value, only: el('only').value};
+  el('opis').innerHTML = `<option value="">${esc(s.allOpis)}</option>`
+    + [...new Set(DATA.rows.map(r => r[0]))].sort()
+      .map(o => `<option value="${esc(o)}">${esc(s.opisName(o))}</option>`).join('');
+  el('decade').innerHTML = `<option value="">${esc(s.allYears)}</option>`
+    + [...new Set(DATA.rows.map(r => r[4]).filter(Boolean).map(y => Math.floor(y/10)*10))]
+      .sort((a, b) => a - b)
+      .map(x => `<option value="${x}">${esc(s.decade(x))}</option>`).join('');
+  el('only').innerHTML = ['', 'txt', 'hand', 'typed']
+    .map((v, i) => `<option value="${v}">${esc(s.only[i])}</option>`).join('');
+  el('opis').value = keep.opis; el('decade').value = keep.decade;
+  el('only').value = keep.only;
+  apply();
+}
 
 function apply() {
   const q = el('q').value.trim().toLowerCase();
@@ -165,8 +243,7 @@ function apply() {
       return false;
     return true;
   });
-  el('count').textContent = view.length.toLocaleString('ru') + ' из '
-    + DATA.rows.length.toLocaleString('ru');
+  el('count').textContent = t().of(nf(view.length), nf(DATA.rows.length));
   el('rows').innerHTML = '';
   shown = 0;
   render();
@@ -177,18 +254,20 @@ function render() {
   el('rows').insertAdjacentHTML('beforeend', part.map(row).join(''));
   shown += part.length;
   el('more').hidden = shown >= view.length;
-  el('more').textContent = `Показать ещё ${Math.min(PAGE, view.length - shown)}`;
+  el('more').textContent = t().more(Math.min(PAGE, view.length - shown));
 }
 
 function row(r) {
   const [opis, delo, title, dates, , conj, pages, material, repro, cls, pid, txt] = r;
+  const s = t();
   const src = `https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=${pid}`;
-  const links = [`<a class="src" href="${src}" rel="noopener">сканы</a>`];
-  if (txt) links.push(`<a class="src" href="https://github.com/beskvladimir-create/tsiolkovsky-papers/blob/main/corpus/${txt}.md" rel="noopener">текст</a>`);
+  const links = [`<a class="src" href="${src}" rel="noopener">${esc(s.scans)}</a>`];
+  if (txt) links.push(`<a class="src" href="${REPO}/blob/main/corpus/${txt}.md" rel="noopener">${esc(s.text)}</a>`);
   const mix = cls < 0 ? '<span class="mixlabel">—</span>'
     : `<span class="bar"><i style="width:${cls}%"></i></span><span class="mixlabel">${cls}%</span>`;
   const d = dates ? (conj ? `<span class="conj">${esc(dates)}</span>` : esc(dates)) : '';
-  const meta = [material, repro].filter(Boolean).join(', ');
+  const meta = [vocab('material', material), vocab('repro', repro)]
+    .filter(Boolean).join(', ');
   return `<tr>
     <td class="num">${esc(opis)}</td>
     <td class="num">${esc(delo)}</td>
@@ -200,9 +279,16 @@ function row(r) {
   </tr>`;
 }
 
-['q','opis','decade','only'].forEach(id =>
+['q', 'opis', 'decade', 'only'].forEach(id =>
   el(id).addEventListener('input', apply));
 el('more').addEventListener('click', render);
+el('lang').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b || b.dataset.l === LANG) return;
+  LANG = b.dataset.l;
+  localStorage.setItem('lang', LANG);
+  paint();
+});
 </script>
 </body>
 </html>

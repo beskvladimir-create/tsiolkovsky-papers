@@ -13,6 +13,12 @@ and carries fields a reader does not need; what goes to the browser is a
 compact array of arrays, which loads quickly and keeps the page usable on a
 phone.
 
+The page is bilingual. Its own text is held in the template, and the archive's
+descriptive vocabulary is glossed here into a Russian-to-English map, sent once
+rather than per row. Titles and dates are never glossed: a title is the
+archival record of what a document is called, and a translated one would give
+a citation the archive does not recognise.
+
     python3 build_site.py
 """
 import csv
@@ -21,6 +27,8 @@ import json
 import os
 import re
 import shutil
+
+from vocab import MATERIAL, REPRODUCTION, LANGUAGE, build as build_vocab
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "docs")
@@ -91,6 +99,11 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     data = {
         "columns": COLUMNS,
+        "vocab": {
+            "material": build_vocab({r["material"] for r in cat["files"]}, MATERIAL),
+            "repro": build_vocab({r["reproduction"] for r in cat["files"]}, REPRODUCTION),
+            "language": build_vocab({r["language"] for r in cat["files"]}, LANGUAGE),
+        },
         "files": len(rows),
         "scans": sum(r[6] for r in rows),
         "dated": sum(1 for r in rows if r[4]),
@@ -103,7 +116,9 @@ def main():
     shutil.copy2(os.path.join(ROOT, "site", "index.html"),
                  os.path.join(OUT, "index.html"))
     size = os.path.getsize(os.path.join(OUT, "catalog.json")) // 1024
+    kept = sum(1 for k, v in data["vocab"]["material"].items() if v != k)
     print(f"  docs/catalog.json  {size} KB, {len(rows)} files")
+    print(f"  glossed material types: {kept} of {len(data['vocab']['material'])}")
     print(f"  docs/index.html")
     print(f"  dated {data['dated']}, transcribed {data['transcribed']}")
 
