@@ -1,131 +1,238 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Фонд 555. Архив К. Э. Циолковского</title>
-<meta name="description" content="Машиночитаемый каталог личного архива К. Э. Циолковского: 2019 дел, 51 008 сканов, датировка, расшифровки.">
+<title>Fond 555. The Tsiolkovsky Papers</title>
+<meta name="description" content="A machine-readable catalogue of the personal archive of Konstantin Tsiolkovsky: 2,019 files, 51,008 scans, every file dated, with transcriptions.">
 <style>
 :root{
-  --bg:#fbfaf7; --fg:#1a1a1a; --dim:#6b6660; --line:#ddd8d0;
-  --card:#fff; --accent:#7a3b12; --hand:#b5651d; --typed:#4a6fa5;
+  --bg:#05070d; --panel:#0b0f18; --fg:#e6e9f0; --dim:#8b93a5;
+  --line:#1b2231; --accent:#ff7a45; --hand:#ff7a45; --typed:#4c7fd4;
 }
-@media (prefers-color-scheme:dark){
-  :root{--bg:#15140f; --fg:#e8e4dc; --dim:#948d82; --line:#2f2c26;
-        --card:#1d1b16; --accent:#d99a5e; --hand:#d99a5e; --typed:#7fa6d9;}
-}
-:root[data-theme=light]{--bg:#fbfaf7;--fg:#1a1a1a;--dim:#6b6660;--line:#ddd8d0;
-  --card:#fff;--accent:#7a3b12;--hand:#b5651d;--typed:#4a6fa5;}
-:root[data-theme=dark]{--bg:#15140f;--fg:#e8e4dc;--dim:#948d82;--line:#2f2c26;
-  --card:#1d1b16;--accent:#d99a5e;--hand:#d99a5e;--typed:#7fa6d9;}
-
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--fg);
-  font:16px/1.55 Georgia,'Iowan Old Style',serif;}
-.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
-header{border-bottom:1px solid var(--line);padding:44px 0 30px;position:relative}
-h1{font-size:30px;margin:0 0 6px;font-weight:normal;letter-spacing:-.01em;
-  max-width:80%}
-.sub{color:var(--dim);font-size:15px;margin:0 0 20px;max-width:64ch}
-.stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:22px}
-.stat b{display:block;font-size:24px;font-weight:normal;font-variant-numeric:tabular-nums}
-.stat span{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
 
-.lang{position:absolute;top:44px;right:0;display:flex;border:1px solid var(--line);
-  border-radius:6px;overflow:hidden;background:var(--card)}
-.lang button{font:inherit;font-size:13px;padding:6px 12px;border:0;cursor:pointer;
-  background:transparent;color:var(--dim)}
-.lang button[aria-pressed=true]{background:var(--accent);color:var(--bg)}
+/* ---- hero ---- */
+.hero{position:relative;min-height:86vh;display:flex;flex-direction:column;
+  justify-content:center;overflow:hidden;border-bottom:1px solid var(--line)}
+#sky{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(90% 60% at 50% 0%,transparent 30%,var(--bg) 100%)}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 20px}
+h1{font-size:clamp(34px,6.2vw,72px);line-height:1.04;margin:0 0 10px;
+  font-weight:300;letter-spacing:-.02em}
+h1 b{font-weight:600;display:block}
+.life{color:var(--dim);font-size:clamp(15px,2vw,19px);margin:0 0 26px;
+  font-variant-numeric:tabular-nums}
+.lede{color:var(--dim);font-size:16px;max-width:60ch;margin:0 0 34px}
+.eq{font-family:'Iowan Old Style',Georgia,serif;font-size:clamp(17px,2.6vw,25px);
+  color:var(--fg);margin:0 0 8px;letter-spacing:.01em}
+.eq-note{color:var(--dim);font-size:12.5px;margin:0 0 34px;max-width:56ch}
+.stats{display:flex;flex-wrap:wrap;gap:34px}
+.stat b{display:block;font-size:clamp(22px,3.4vw,32px);font-weight:400;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.13em}
+.scroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;
+  color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  text-decoration:none}
 
-.controls{position:sticky;top:0;background:var(--bg);padding:16px 0 12px;
-  border-bottom:1px solid var(--line);z-index:5}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-input[type=search],select{font:inherit;font-size:14px;padding:8px 11px;
-  border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)}
-input[type=search]{flex:1;min-width:220px}
-.count{color:var(--dim);font-size:13px;margin-left:auto;font-variant-numeric:tabular-nums}
+.lang{position:absolute;top:26px;right:24px;z-index:3;display:flex;
+  border:1px solid var(--line);border-radius:2px;overflow:hidden;background:rgba(11,15,24,.7);
+  backdrop-filter:blur(6px)}
+.lang button{font:inherit;font-size:12px;letter-spacing:.08em;padding:7px 13px;
+  border:0;cursor:pointer;background:transparent;color:var(--dim);text-transform:uppercase}
+.lang button[aria-pressed=true]{background:var(--accent);color:#0a0a0a}
+
+/* ---- chronology ---- */
+.section{padding:74px 0 0}
+h2{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  font-weight:400;margin:0 0 8px}
+.note{color:var(--dim);font-size:14px;max-width:70ch;margin:0 0 28px}
+.chart{display:flex;align-items:flex-end;gap:2px;height:132px;
+  border-bottom:1px solid var(--line);padding-bottom:1px}
+.chart div{flex:1;background:var(--line);min-height:1px;position:relative;
+  transition:background .12s;cursor:default}
+.chart div:hover,.chart div.on{background:var(--accent)}
+.axis{display:flex;justify-content:space-between;color:var(--dim);font-size:11px;
+  margin-top:9px;font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.peak{color:var(--dim);font-size:13px;margin:16px 0 0}
+.peak b{color:var(--fg);font-weight:500}
+
+/* ---- controls + table ---- */
+.controls{position:sticky;top:0;background:rgba(5,7,13,.94);backdrop-filter:blur(8px);
+  padding:16px 0 13px;border-bottom:1px solid var(--line);z-index:5;margin-top:64px}
+.row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+input[type=search],select{font:inherit;font-size:13.5px;padding:9px 12px;
+  border:1px solid var(--line);border-radius:2px;background:var(--panel);color:var(--fg)}
+input[type=search]{flex:1;min-width:230px}
+input[type=search]:focus,select:focus{outline:0;border-color:var(--accent)}
+.count{color:var(--dim);font-size:12.5px;margin-left:auto;font-variant-numeric:tabular-nums}
+.legend{font-size:12px;color:var(--dim);margin:11px 0 0;max-width:96ch}
 
 .tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 40px}
-th{text-align:left;font-weight:normal;color:var(--dim);font-size:12px;
-  text-transform:uppercase;letter-spacing:.06em;padding:12px 10px;
+table{border-collapse:collapse;width:100%;font-size:14px;margin:2px 0 40px}
+th{text-align:left;font-weight:400;color:var(--dim);font-size:11px;
+  text-transform:uppercase;letter-spacing:.12em;padding:15px 10px;
   border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-tr:hover td{background:var(--card)}
+td{padding:13px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:hover td{background:var(--panel)}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--dim)}
-.ttl{max-width:44ch}
-.dates{white-space:nowrap;font-variant-numeric:tabular-nums}
-.conj{color:var(--dim)}
+.ttl{max-width:46ch}
+.dates{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--dim)}
+.conj{opacity:.62}
+.meta{font-size:11.5px;color:var(--dim);letter-spacing:.02em}
 a{color:var(--accent)}
-a.src{text-decoration:none;border-bottom:1px dotted var(--accent)}
-.bar{display:inline-block;width:52px;height:7px;border-radius:4px;
+a.src{text-decoration:none;border-bottom:1px solid rgba(255,122,69,.32)}
+a.src:hover{border-bottom-color:var(--accent)}
+.bar{display:inline-block;width:54px;height:6px;border-radius:1px;
   background:var(--typed);position:relative;overflow:hidden;vertical-align:middle}
 .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--hand)}
-.mixlabel{font-size:11px;color:var(--dim);margin-left:6px;font-variant-numeric:tabular-nums}
-.more{display:block;margin:0 auto 60px;padding:11px 22px;font:inherit;font-size:14px;
-  background:var(--card);color:var(--fg);border:1px solid var(--line);
-  border-radius:7px;cursor:pointer}
-footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--dim);font-size:13px}
+.mixlabel{font-size:11px;color:var(--dim);margin-left:7px;font-variant-numeric:tabular-nums}
+.more{display:block;margin:0 auto 70px;padding:12px 26px;font:inherit;font-size:13px;
+  letter-spacing:.09em;text-transform:uppercase;background:transparent;color:var(--fg);
+  border:1px solid var(--line);border-radius:2px;cursor:pointer}
+.more:hover{border-color:var(--accent);color:var(--accent)}
+footer{border-top:1px solid var(--line);padding:34px 0 70px;color:var(--dim);font-size:13px}
 footer a{color:var(--dim)}
-.legend{font-size:12px;color:var(--dim);margin:10px 0 0}
+footer p{max-width:78ch}
 @media (max-width:640px){
-  h1{font-size:24px;max-width:100%;margin-top:34px} .hidesm{display:none}
-  .lang{top:0}
+  .hero{min-height:80vh} .stats{gap:22px} .hidesm{display:none}
+  .chart{height:96px} .section{padding-top:52px}
 }
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
+
+<div class="lang" id="lang">
+  <button data-l="en" aria-pressed="true">Eng</button
+  ><button data-l="ru" aria-pressed="false">Рус</button>
+</div>
+
+<section class="hero">
+  <canvas id="sky"></canvas>
+  <div class="wrap">
+    <p class="eyebrow" id="eyebrow"></p>
+    <h1 id="h1"></h1>
+    <p class="life" id="life"></p>
+    <p class="eq">&Delta;v = v<sub>e</sub> &middot; ln(m<sub>0</sub> / m<sub>1</sub>)</p>
+    <p class="eq-note" id="eqnote"></p>
+    <div class="stats" id="stats"></div>
+  </div>
+  <a class="scroll" href="#catalogue" id="scroll"></a>
+</section>
+
 <div class="wrap">
-<header>
-  <div class="lang" id="lang">
-    <button data-l="ru" aria-pressed="true">Рус</button
-    ><button data-l="en" aria-pressed="false">Eng</button>
-  </div>
-  <h1 id="h1"></h1>
-  <p class="sub" id="sub"></p>
-  <div class="stats" id="stats"></div>
-</header>
-
-<div class="controls">
-  <div class="row">
-    <input type="search" id="q" autocomplete="off">
-    <select id="opis"></select>
-    <select id="decade"></select>
-    <select id="only"></select>
-    <span class="count" id="count"></span>
-  </div>
-  <p class="legend" id="legend"></p>
+  <section class="section">
+    <h2 id="chronTitle"></h2>
+    <p class="note" id="chronNote"></p>
+    <div class="chart" id="chart"></div>
+    <div class="axis" id="axis"></div>
+    <p class="peak" id="peak"></p>
+  </section>
 </div>
 
-<div class="tablewrap">
-<table>
-  <thead><tr id="head"></tr></thead>
-  <tbody id="rows"></tbody>
-</table>
-</div>
-<button class="more" id="more" hidden></button>
+<div id="catalogue"></div>
+<div class="wrap">
+  <div class="controls">
+    <div class="row">
+      <input type="search" id="q" autocomplete="off">
+      <select id="opis"></select>
+      <select id="decade"></select>
+      <select id="only"></select>
+      <span class="count" id="count"></span>
+    </div>
+    <p class="legend" id="legend"></p>
+  </div>
 
-<footer id="foot"></footer>
+  <div class="tablewrap">
+    <table>
+      <thead><tr id="head"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <button class="more" id="more" hidden></button>
+
+  <footer id="foot"></footer>
 </div>
 
 <script>
 const PAGE = 200;
 const REPO = 'https://github.com/beskvladimir-create/tsiolkovsky-papers';
-let DATA = null, view = [], shown = 0, LANG = 'ru';
+let DATA = null, view = [], shown = 0, LANG = 'en';
 
 const el = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const T = {
+ en: {
+  title: 'Fond 555. The Tsiolkovsky Papers',
+  eyebrow: 'Archive of the Russian Academy of Sciences · Fond 555',
+  h1: 'Konstantin<b>Tsiolkovsky</b>',
+  life: '1857 — 1935 · the personal archive, complete',
+  eqnote: 'He wrote the equation that governs every rocket ever flown, in a '
+        + 'provincial schoolroom, decades before anything could be tested. '
+        + 'These are his papers.',
+  stats: ['files', 'scans', 'dated', 'transcribed'],
+  scroll: 'The catalogue ↓',
+  chronTitle: 'The fond in time',
+  chronNote: 'Files of the author’s own work, opis 1, by the year they open. '
+           + 'The dating is the archive’s own and was collected from the card of '
+           + 'every file; it had not been available as a table before. 82% of this '
+           + 'work falls in the last eighteen years of a working life of nearly sixty.',
+  peak: (y, n) => `Busiest year: <b>${y}</b>, ${n} files. The last four years hold `
+       + `40% of the files but only 27% of the sheets — late work does not stop, it shortens.`,
+  search: 'Search by title or file number',
+  allOpis: 'All inventories', allYears: 'All years',
+  only: ['Everything', 'Transcribed only', 'Mostly handwritten', 'Mostly typewritten'],
+  opisName: o => 'Opis ' + (o === '1а' ? '1A' : o),
+  decade: d => d + 's',
+  of: (a, b) => `${a} of ${b}`,
+  head: ['Opis', 'File', 'Title', 'Dates', 'Sheets', 'Type', 'Links'],
+  scans: 'scans', text: 'text',
+  more: n => `Show ${n} more`,
+  legend: 'The bar under Type gives the share of handwritten sheets in a file: '
+        + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> autograph, '
+        + '<span class="bar" style="width:26px"><i style="width:0"></i></span> typescript. '
+        + 'Dates in square brackets were assigned by the archivists from the contents, not '
+        + 'written by the author. Titles and dates appear as the archive records them, in '
+        + 'Russian; the descriptions around them are glossed.',
+  foot: `<p>Source: <a href="https://www.ras.ru/ktsiolkovskyarchive/">Archive of the RAS, fond 555</a>. `
+      + `The scans belong to the archive and are not reproduced here. The catalogue is released `
+      + `CC0 and the code MIT: <a href="${REPO}">repository</a>, `
+      + `<a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>`
+      + `<p>The transcriptions are machine-generated with uncertain readings marked, and are `
+      + `markedly less accurate on handwriting (81% of characters) than on typescript (98%). `
+      + `They will not support collating two manuscripts against each other; the measured `
+      + `figures and the limits of use are set out in the repository.</p>`
+      + `<p>An independent project, not affiliated with or endorsed by the archive. `
+      + `Vladimir Beskorovainyi, 2026.</p>`,
+ },
  ru: {
   title: 'Фонд 555. Архив К. Э. Циолковского',
-  h1: 'Фонд 555. Личный архив К. Э. Циолковского',
-  sub: 'Архив Российской академии наук отсканировал фонд и выложил изображения, '
-     + 'но каталога, по которому можно спрашивать, у него нет: дела открываются '
-     + 'поодиночке по числовому адресу. Здесь тот же фонд целиком, в виде '
-     + 'таблицы, с датировкой каждого дела и с расшифровками там, где они готовы.',
+  eyebrow: 'Архив Российской академии наук · Фонд 555',
+  h1: 'Константин<b>Циолковский</b>',
+  life: '1857 — 1935 · личный архив целиком',
+  eqnote: 'Он вывел уравнение, которому подчиняется всякая полетевшая ракета, '
+        + 'в уездном училище, за десятилетия до того, как это можно было '
+        + 'проверить. Здесь его бумаги.',
   stats: ['дел', 'сканов', 'с датировкой', 'расшифровано'],
+  scroll: 'Каталог ↓',
+  chronTitle: 'Фонд во времени',
+  chronNote: 'Дела собственных работ, опись 1, по году начала. Датировка взята с '
+           + 'карточки каждого дела в архиве и до сих пор не была доступна таблицей. '
+           + '82% этой работы приходится на последние восемнадцать лет при почти '
+           + 'шестидесятилетнем стаже.',
+  peak: (y, n) => `Самый плотный год: <b>${y}</b>, ${n} дел. На последние четыре года `
+       + `приходится 40% дел, но лишь 27% листов: поздняя работа не прекращается, а укорачивается.`,
   search: 'Поиск по названию или номеру дела',
   allOpis: 'Все описи', allYears: 'Все годы',
   only: ['Всё', 'Только с расшифровкой', 'Преимущественно рукопись',
@@ -144,43 +251,11 @@ const T = {
       + `Сканы принадлежат архиву и здесь не воспроизводятся. Каталог опубликован под CC0, `
       + `код под MIT: <a href="${REPO}">репозиторий</a>, `
       + `<a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>`
-      + `<p>Расшифровки machine-generated, с явной пометкой неуверенных чтений, и по `
-      + `рукописям заметно менее точны, чем по машинописи. Измеренные цифры и границы `
-      + `применимости описаны в репозитории. Проект независимый, архив к нему отношения `
-      + `не имеет.</p><p>Владимир Бескоровайный, 2026.</p>`,
- },
- en: {
-  title: 'Fond 555. The Tsiolkovsky Papers',
-  h1: 'Fond 555. The personal archive of K. E. Tsiolkovsky',
-  sub: 'The Archive of the Russian Academy of Sciences scanned the fond and put '
-     + 'the images online, but it has no catalogue you can query: files open one '
-     + 'at a time by numeric address. Here is the same fond whole, as a table, '
-     + 'with every file dated and with transcriptions where they are ready.',
-  stats: ['files', 'scans', 'dated', 'transcribed'],
-  search: 'Search by title or file number',
-  allOpis: 'All inventories', allYears: 'All years',
-  only: ['Everything', 'Transcribed only', 'Mostly handwritten',
-         'Mostly typewritten'],
-  opisName: o => 'Opis ' + (o === '1а' ? '1A' : o),
-  decade: d => d + 's',
-  of: (a, b) => `${a} of ${b}`,
-  head: ['Opis', 'File', 'Title', 'Dates', 'Sheets', 'Type', 'Links'],
-  scans: 'scans', text: 'text',
-  more: n => `Show ${n} more`,
-  legend: 'The bar under Type gives the share of handwritten sheets in a file: '
-        + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> autograph, '
-        + '<span class="bar" style="width:26px"><i style="width:0"></i></span> typescript. '
-        + 'Dates in square brackets were assigned by the archivists from the contents, '
-        + 'not written by the author. Titles and dates are given as the archive records '
-        + 'them, in Russian; the descriptions around them are glossed.',
-  foot: `<p>Source: <a href="https://www.ras.ru/ktsiolkovskyarchive/">Archive of the RAS, fond 555</a>. `
-      + `The scans belong to the archive and are not reproduced here. The catalogue is `
-      + `released CC0 and the code MIT: <a href="${REPO}">repository</a>, `
-      + `<a href="https://doi.org/10.5281/zenodo.21705221">DOI</a>.</p>`
-      + `<p>The transcriptions are machine-generated with uncertain readings marked, and `
-      + `are markedly less accurate on handwriting than on typescript. The measured figures `
-      + `and the limits of use are described in the repository. This is an independent `
-      + `project, not affiliated with the archive.</p><p>Vladimir Beskorovainyi, 2026.</p>`,
+      + `<p>Расшифровки machine-generated, с явной пометкой неуверенных чтений, и по рукописям `
+      + `заметно менее точны (81% знаков), чем по машинописи (98%). Сличать по ним две рукописи `
+      + `между собой нельзя; измеренные цифры и границы применимости описаны в репозитории.</p>`
+      + `<p>Проект независимый, архив к нему отношения не имеет. `
+      + `Владимир Бескоровайный, 2026.</p>`,
  },
 };
 
@@ -188,45 +263,87 @@ const t = () => T[LANG];
 const nf = n => n.toLocaleString(LANG === 'ru' ? 'ru' : 'en');
 const vocab = (kind, v) => (LANG === 'en' && DATA.vocab[kind][v]) || v;
 
+/* Starfield. Drawn once and on resize: a static sky, not a screensaver.
+   Positions come from a fixed seed so the page looks the same on every visit. */
+function sky() {
+  const c = el('sky'), x = c.getContext('2d');
+  const w = c.width = c.offsetWidth * devicePixelRatio;
+  const h = c.height = c.offsetHeight * devicePixelRatio;
+  x.clearRect(0, 0, w, h);
+  let s = 20250803;
+  const rnd = () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
+  const n = Math.round(w * h / 26000);
+  for (let i = 0; i < n; i++) {
+    const r = (rnd() ** 2.4) * 1.5 * devicePixelRatio + .28 * devicePixelRatio;
+    x.globalAlpha = .12 + rnd() * .72;
+    x.fillStyle = rnd() > .93 ? '#ffd9c0' : '#dfe6f5';
+    x.beginPath();
+    x.arc(rnd() * w, rnd() * h, r, 0, 6.2832);
+    x.fill();
+  }
+}
+
 fetch('catalog.json').then(r => r.json()).then(d => {
   DATA = d;
-  // Скобки обязательны: без них ?: съедает всё выражение, и сохранённый
-  // выбор «Eng» всё равно давал бы русский.
   const saved = localStorage.getItem('lang');
-  LANG = ['ru', 'en'].includes(saved) ? saved
-       : ((navigator.language || '').startsWith('ru') ? 'ru' : 'en');
+  LANG = ['ru', 'en'].includes(saved) ? saved : 'en';
+  sky();
   paint();
 });
+addEventListener('resize', sky);
+
+function chronology() {
+  const s = t();
+  const own = DATA.rows.filter(r => r[0] === '1' && r[4]);
+  const by = {};
+  own.forEach(r => by[r[4]] = (by[r[4]] || 0) + 1);
+  const years = Object.keys(by).map(Number);
+  const a = Math.min(...years), b = Math.max(...years);
+  const max = Math.max(...Object.values(by));
+  let bars = '';
+  for (let y = a; y <= b; y++) {
+    const n = by[y] || 0;
+    bars += `<div style="height:${n / max * 100}%" title="${y}: ${n}"></div>`;
+  }
+  el('chart').innerHTML = bars;
+  el('axis').innerHTML = `<span>${a}</span><span>${Math.round((a + b) / 2)}</span><span>${b}</span>`;
+  const peak = years.reduce((p, y) => by[y] > by[p] ? y : p, years[0]);
+  el('peak').innerHTML = s.peak(peak, by[peak]);
+}
 
 function paint() {
   const s = t();
   document.documentElement.lang = LANG;
   document.title = s.title;
-  el('h1').textContent = s.h1;
-  el('sub').textContent = s.sub;
+  el('eyebrow').textContent = s.eyebrow;
+  el('h1').innerHTML = s.h1;
+  el('life').textContent = s.life;
+  el('eqnote').textContent = s.eqnote;
+  el('scroll').textContent = s.scroll;
+  el('chronTitle').textContent = s.chronTitle;
+  el('chronNote').textContent = s.chronNote;
   el('legend').innerHTML = s.legend;
   el('foot').innerHTML = s.foot;
   el('q').placeholder = s.search;
   el('head').innerHTML = s.head
     .map((h, i) => `<th${i === 4 || i === 5 ? ' class="hidesm"' : ''}>${esc(h)}</th>`).join('');
   el('stats').innerHTML = [DATA.files, DATA.scans, DATA.dated, DATA.transcribed]
-    .map((n, i) => `<div class="stat"><b>${nf(n)}</b><span>${esc(s.stats[i])}</span></div>`)
-    .join('');
+    .map((n, i) => `<div class="stat"><b>${nf(n)}</b><span>${esc(s.stats[i])}</span></div>`).join('');
   [...el('lang').children].forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
+  chronology();
 
   const keep = {opis: el('opis').value, decade: el('decade').value, only: el('only').value};
   el('opis').innerHTML = `<option value="">${esc(s.allOpis)}</option>`
     + [...new Set(DATA.rows.map(r => r[0]))].sort()
       .map(o => `<option value="${esc(o)}">${esc(s.opisName(o))}</option>`).join('');
   el('decade').innerHTML = `<option value="">${esc(s.allYears)}</option>`
-    + [...new Set(DATA.rows.map(r => r[4]).filter(Boolean).map(y => Math.floor(y/10)*10))]
-      .sort((a, b) => a - b)
+    + [...new Set(DATA.rows.map(r => r[4]).filter(Boolean).map(y => Math.floor(y / 10) * 10))]
+      .sort((x, y) => x - y)
       .map(x => `<option value="${x}">${esc(s.decade(x))}</option>`).join('');
   el('only').innerHTML = ['', 'txt', 'hand', 'typed']
     .map((v, i) => `<option value="${v}">${esc(s.only[i])}</option>`).join('');
-  el('opis').value = keep.opis; el('decade').value = keep.decade;
-  el('only').value = keep.only;
+  el('opis').value = keep.opis; el('decade').value = keep.decade; el('only').value = keep.only;
   apply();
 }
 
@@ -235,7 +352,7 @@ function apply() {
   const o = el('opis').value, dc = el('decade').value, only = el('only').value;
   view = DATA.rows.filter(r => {
     if (o && r[0] !== o) return false;
-    if (dc && (!r[4] || Math.floor(r[4]/10)*10 !== +dc)) return false;
+    if (dc && (!r[4] || Math.floor(r[4] / 10) * 10 !== +dc)) return false;
     if (only === 'txt' && !r[11]) return false;
     if (only === 'hand' && !(r[9] >= 60)) return false;
     if (only === 'typed' && !(r[9] >= 0 && r[9] < 40)) return false;
@@ -265,13 +382,12 @@ function row(r) {
   if (txt) links.push(`<a class="src" href="${REPO}/blob/main/corpus/${txt}.md" rel="noopener">${esc(s.text)}</a>`);
   const mix = cls < 0 ? '<span class="mixlabel">—</span>'
     : `<span class="bar"><i style="width:${cls}%"></i></span><span class="mixlabel">${cls}%</span>`;
-  const d = dates ? (conj ? `<span class="conj">${esc(dates)}</span>` : esc(dates)) : '';
-  const meta = [vocab('material', material), vocab('repro', repro)]
-    .filter(Boolean).join(', ');
+  const d = dates ? `<span class="${conj ? 'conj' : ''}">${esc(dates)}</span>` : '';
+  const meta = [vocab('material', material), vocab('repro', repro)].filter(Boolean).join(', ');
   return `<tr>
     <td class="num">${esc(opis)}</td>
     <td class="num">${esc(delo)}</td>
-    <td class="ttl">${esc(title)}${meta ? `<br><span class="mixlabel">${esc(meta)}</span>` : ''}</td>
+    <td class="ttl">${esc(title)}${meta ? `<br><span class="meta">${esc(meta)}</span>` : ''}</td>
     <td class="dates">${d}</td>
     <td class="num hidesm">${pages}</td>
     <td class="hidesm">${mix}</td>
@@ -279,8 +395,7 @@ function row(r) {
   </tr>`;
 }
 
-['q', 'opis', 'decade', 'only'].forEach(id =>
-  el(id).addEventListener('input', apply));
+['q', 'opis', 'decade', 'only'].forEach(id => el(id).addEventListener('input', apply));
 el('more').addEventListener('click', render);
 el('lang').addEventListener('click', e => {
   const b = e.target.closest('button');
