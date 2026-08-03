@@ -8,6 +8,10 @@
 Tsiolkovsky — all 2,019 files, 51,008 scans — and the pipeline that produced
 it.**
 
+**Browse it: <https://beskvladimir-create.github.io/tsiolkovsky-papers/>** —
+the whole fond in one table, searchable, filterable by inventory, decade and
+page type, with links to the archive's scans and to the transcriptions.
+
 Konstantin Tsiolkovsky (1857–1935) derived the rocket equation and described
 the multistage rocket, the orbital station and the space elevator decades
 before anyone could test them. His papers are held as **fond 555 of the
@@ -216,6 +220,7 @@ back and reports nothing when the observed similarity fails to clear it.
 | `compare_variants.py` | Collates two redactions, and refuses to when reading quality cannot support it |
 | `night_run.sh` | Runs the queue overnight and stops at a fixed hour, so the day's quota stays free |
 | `assemble.py` | Assembles per-scan output into one document per archival file |
+| `build_site.py` | Builds the browsable site from the catalogue into `docs/` |
 | `sync.sh` | Copies the published scripts into the working directory, so the two do not drift |
 | `TRANSCRIPTION_SPEC.md` | The fixed per-page instruction given to the model |
 
