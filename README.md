@@ -27,7 +27,8 @@ This repository closes the first of those gaps.
 | | |
 | --- | --- |
 | `catalog.csv` / `catalog.json` | Every file in the fond: inventory, archival file number, title, material type, reproduction method, dates, scan count, link to the source page. **2,019 files, complete.** |
-| `delo_dates.csv` | **The dating of every file**, taken from the archive's own cards: opening and closing year, the conjectural-dating flag, material type and reproduction method. 2,019 files, 1,971 dated, 1878–1935 |
+| `delo_dates.csv` | **The dating of every file**, taken from the archive's own cards: opening and closing year, the conjectural-dating flag, material type and reproduction method. 2,019 files, 1,969 dated, 1878–1935 |
+| `title_en.csv` | **English translations of all 2,019 file descriptions**, beside the Russian original, which stays the citable record |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
 | `priority_bolide.csv` | The 1934 bolide correspondence: 221 files, 970 sheets |
 | `corpus/` | **Transcriptions**, one file per archival file. 98 files, 4,066 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
