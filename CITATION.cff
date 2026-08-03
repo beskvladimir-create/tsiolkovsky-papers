@@ -7,7 +7,7 @@ authors:
     given-names: Vladimir
 repository-code: "https://github.com/beskvladimir-create/tsiolkovsky-papers"
 doi: "10.5281/zenodo.21705221"
-version: v1.0.0
+version: v1.3.0
 identifiers:
   - type: doi
     value: "10.5281/zenodo.21705221"
@@ -25,7 +25,11 @@ abstract: >-
   resumable downloader that resolves each file's real archival inventory and
   number from the scan paths, a page classifier that separates handwriting
   from typescript without a neural network, and a tool that scores
-  transcriptions against published texts on Russian Wikisource.
+  transcriptions against published texts on Russian Wikisource. It further
+  contains the dating of every file, collected from the archive's own cards
+  and not previously available as a table, transcriptions of 98 files, and a
+  measurement of how far reading error reaches on the fond's handwriting,
+  obtained from texts the fond happens to hold twice.
 keywords:
   - digital humanities
   - archives
@@ -35,4 +39,4 @@ keywords:
   - handwritten text recognition
   - Russian
 license: MIT
-date-released: 2026-07-30
+date-released: 2026-08-03
