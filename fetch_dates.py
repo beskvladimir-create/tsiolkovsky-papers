@@ -45,7 +45,14 @@ def parse_dates(s):
 
 
 def field(text, name, stop):
-    m = re.search(rf"{name}:\s*(.+?)(?:{stop})", text)
+    """One field of the card.
+
+    The pattern allows an empty value on purpose. Demanding at least one
+    character makes an empty field swallow everything after it: two cards
+    carry no closing date, and a greedy read pulled in the rest of the page,
+    navigation and analytics script included.
+    """
+    m = re.search(rf"{name}:\s*(.*?)(?:{stop})", text)
     return m.group(1).strip() if m else ""
 
 

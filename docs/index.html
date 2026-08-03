@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fond 555. The Tsiolkovsky Papers</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2305070d'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='4.6' fill='none' stroke='%23ff7a45' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='16' cy='16' r='4.4' fill='%23e6e9f0'/%3E%3Ccircle cx='26.4' cy='10.6' r='1.7' fill='%23ff7a45'/%3E%3C/svg%3E">
 <meta name="description" content="A machine-readable catalogue of the personal archive of Konstantin Tsiolkovsky: 2,019 files, 51,008 scans, every file dated, with transcriptions.">
 <style>
 :root{
@@ -20,7 +21,8 @@ body{margin:0;background:var(--bg);color:var(--fg);
 /* ---- hero ---- */
 .hero{position:relative;min-height:86vh;display:flex;flex-direction:column;
   justify-content:center;overflow:hidden;border-bottom:1px solid var(--line)}
-#sky{position:absolute;inset:0;width:100%;height:100%;display:block}
+#sky,#twinkle{position:absolute;inset:0;width:100%;height:100%;display:block}
+#twinkle{pointer-events:none}
 .hero::after{content:'';position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(90% 60% at 50% 0%,transparent 30%,var(--bg) 100%)}
 .hero .wrap{position:relative;z-index:2;width:100%}
@@ -77,17 +79,22 @@ input[type=search]:focus,select:focus{outline:0;border-color:var(--accent)}
 .legend{font-size:12px;color:var(--dim);margin:11px 0 0;max-width:96ch}
 
 .tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:2px 0 40px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:2px 0 40px;
+  table-layout:fixed}
+col.c-opis{width:74px} col.c-file{width:78px} col.c-dates{width:186px}
+col.c-sheets{width:78px} col.c-type{width:118px} col.c-links{width:124px}
+td{overflow-wrap:anywhere}
 th{text-align:left;font-weight:400;color:var(--dim);font-size:11px;
   text-transform:uppercase;letter-spacing:.12em;padding:15px 10px;
   border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:13px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 tr:hover td{background:var(--panel)}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--dim)}
-.ttl{max-width:46ch}
-.dates{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--dim)}
+.ttl{max-width:none}
+.dates{font-variant-numeric:tabular-nums;color:var(--dim)}
 .conj{opacity:.62}
 .meta{font-size:11.5px;color:var(--dim);letter-spacing:.02em}
+.orig{font-size:12px;color:var(--dim);opacity:.72;font-style:italic}
 a{color:var(--accent)}
 a.src{text-decoration:none;border-bottom:1px solid rgba(255,122,69,.32)}
 a.src:hover{border-bottom-color:var(--accent)}
@@ -104,6 +111,8 @@ footer a{color:var(--dim)}
 footer p{max-width:78ch}
 @media (max-width:640px){
   .hero{min-height:80vh} .stats{gap:22px} .hidesm{display:none}
+  col.c-opis{width:56px} col.c-file{width:60px} col.c-dates{width:120px}
+  col.c-links{width:96px}
   .chart{height:96px} .section{padding-top:52px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -118,6 +127,7 @@ footer p{max-width:78ch}
 
 <section class="hero">
   <canvas id="sky"></canvas>
+  <canvas id="twinkle"></canvas>
   <div class="wrap">
     <p class="eyebrow" id="eyebrow"></p>
     <h1 id="h1"></h1>
@@ -154,6 +164,10 @@ footer p{max-width:78ch}
 
   <div class="tablewrap">
     <table>
+      <colgroup>
+        <col class="c-opis"><col class="c-file"><col><col class="c-dates">
+        <col class="c-sheets"><col class="c-type"><col class="c-links">
+      </colgroup>
       <thead><tr id="head"></tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -214,7 +228,7 @@ const T = {
       + `They will not support collating two manuscripts against each other; the measured `
       + `figures and the limits of use are set out in the repository.</p>`
       + `<p>An independent project, not affiliated with or endorsed by the archive. `
-      + `Vladimir Beskorovainyi, 2026.</p>`,
+      + `<a href="https://vladimir.besk.tech/" rel="noopener">Vladimir Beskorovainyi</a>, 2026.</p>`,
  },
  ru: {
   title: 'Фонд 555. Архив К. Э. Циолковского',
@@ -255,7 +269,7 @@ const T = {
       + `заметно менее точны (81% знаков), чем по машинописи (98%). Сличать по ним две рукописи `
       + `между собой нельзя; измеренные цифры и границы применимости описаны в репозитории.</p>`
       + `<p>Проект независимый, архив к нему отношения не имеет. `
-      + `Владимир Бескоровайный, 2026.</p>`,
+      + `<a href="https://vladimir.besk.tech/" rel="noopener">Владимир Бескоровайный</a>, 2026.</p>`,
  },
 };
 
@@ -263,24 +277,204 @@ const t = () => T[LANG];
 const nf = n => n.toLocaleString(LANG === 'ru' ? 'ru' : 'en');
 const vocab = (kind, v) => (LANG === 'en' && DATA.vocab[kind][v]) || v;
 
-/* Starfield. Drawn once and on resize: a static sky, not a screensaver.
-   Positions come from a fixed seed so the page looks the same on every visit. */
+/* ---------------------------------------------------------------
+   The sky.
+
+   Constellations are not invented: the stars are placed by their real
+   right ascension and declination, so the asterisms have the shapes an
+   observer would recognise. Each constellation is projected about its own
+   centre and then set down where the layout wants it, which keeps every
+   figure true to itself without pretending the whole panel is one
+   continuous sky.
+
+   Everything still is drawn once onto one canvas. Only the twinkling
+   stars are animated, on a second canvas of their own, so the expensive
+   layer is never repainted. Motion is dropped entirely when the reader
+   has asked for reduced motion.
+   --------------------------------------------------------------- */
+
+// name, [[ra hours, dec degrees], ...], lines between indices, label
+const SKY = [
+ {n:'Ursa Major', ru:'Большая Медведица', at:[.13,.20], s:1.55,
+  st:[[11.062,61.751],[11.031,56.382],[11.897,53.695],[12.257,57.033],
+      [12.900,55.960],[13.399,54.925],[13.792,49.313]],
+  ln:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]]},
+ {n:'Cassiopeia', ru:'Кассиопея', at:[.80,.14], s:1.9,
+  st:[[0.153,59.150],[0.675,56.537],[0.945,60.717],[1.430,60.235],[1.907,63.670]],
+  ln:[[0,1],[1,2],[2,3],[3,4]]},
+ {n:'Cygnus', ru:'Лебедь', at:[.60,.62], s:1.35,
+  st:[[20.690,45.280],[20.370,40.257],[20.770,33.970],[19.750,45.131],[19.512,27.960]],
+  ln:[[0,1],[1,4],[3,1],[1,2]]},
+ {n:'Lyra', ru:'Лира', at:[.30,.72], s:3.4,
+  st:[[18.615,38.784],[18.835,33.363],[18.982,32.689],[18.908,36.899],[18.746,37.605]],
+  ln:[[0,4],[4,3],[3,2],[2,1],[1,4]]},
+ {n:'Orion', ru:'Орион', at:[.90,.52], s:1.5,
+  st:[[5.919,7.407],[5.418,6.350],[5.533,-0.299],[5.604,-1.202],[5.679,-1.943],
+      [5.796,-9.670],[5.242,-8.202]],
+  ln:[[0,1],[0,4],[1,2],[2,3],[3,4],[4,5],[5,6],[6,2]]},
+];
+
+function project(c, w, h) {
+  // Gnomonic-enough for a small field: RA east is to the left, as on a chart.
+  const ra = c.st.reduce((a, p) => a + p[0], 0) / c.st.length;
+  const de = c.st.reduce((a, p) => a + p[1], 0) / c.st.length;
+  const k = Math.min(w, h) * 0.052 * c.s;
+  return c.st.map(([r, d]) => {
+    let dr = (r - ra) * 15;
+    if (dr > 180) dr -= 360; if (dr < -180) dr += 360;
+    return [c.at[0] * w - dr * Math.cos(de * Math.PI / 180) * k / 10,
+            c.at[1] * h - (d - de) * k / 10];
+  });
+}
+
+function galaxy(x, cx, cy, r, tilt, hue) {
+  // A faint spiral: two logarithmic arms scattered with grains, no glow.
+  x.save(); x.translate(cx, cy); x.rotate(tilt); x.scale(1, .42);
+  const core = x.createRadialGradient(0, 0, 0, 0, 0, r);
+  core.addColorStop(0, `rgba(${hue},.30)`);
+  core.addColorStop(.35, `rgba(${hue},.10)`);
+  core.addColorStop(1, `rgba(${hue},0)`);
+  x.fillStyle = core;
+  x.beginPath(); x.arc(0, 0, r, 0, 6.2832); x.fill();
+  for (let arm = 0; arm < 2; arm++) {
+    for (let i = 0; i < 220; i++) {
+      const t = i / 220 * 3.4;
+      const rr = r * .16 * Math.exp(.30 * t);
+      if (rr > r) break;
+      const a = t + arm * Math.PI + (Math.random() - .5) * .30;
+      x.globalAlpha = (1 - t / 3.4) * .30;
+      x.fillStyle = `rgba(${hue},1)`;
+      x.beginPath();
+      x.arc(Math.cos(a) * rr + (Math.random() - .5) * r * .07,
+            Math.sin(a) * rr + (Math.random() - .5) * r * .07,
+            .5 * devicePixelRatio, 0, 6.2832);
+      x.fill();
+    }
+  }
+  x.restore(); x.globalAlpha = 1;
+}
+
+function blackHole(x, cx, cy, r) {
+  // The shadow, a thin accretion ring seen almost edge on, and the arc of
+  // light bent over the top. Kept dim: it is a background, not an exhibit.
+  x.save(); x.translate(cx, cy);
+  const halo = x.createRadialGradient(0, 0, r * .9, 0, 0, r * 3.4);
+  halo.addColorStop(0, 'rgba(255,170,110,.13)');
+  halo.addColorStop(1, 'rgba(255,170,110,0)');
+  x.fillStyle = halo;
+  x.beginPath(); x.arc(0, 0, r * 3.4, 0, 6.2832); x.fill();
+  x.save(); x.scale(1, .22);
+  x.strokeStyle = 'rgba(255,196,140,.55)'; x.lineWidth = 1.5 * devicePixelRatio;
+  x.beginPath(); x.arc(0, 0, r * 2.05, 0, 6.2832); x.stroke();
+  x.strokeStyle = 'rgba(255,150,90,.22)'; x.lineWidth = 4 * devicePixelRatio;
+  x.beginPath(); x.arc(0, 0, r * 2.5, 0, 6.2832); x.stroke();
+  x.restore();
+  x.strokeStyle = 'rgba(255,205,150,.42)'; x.lineWidth = 1.4 * devicePixelRatio;
+  x.beginPath(); x.arc(0, 0, r * 2.05, Math.PI, 0); x.stroke();
+  x.fillStyle = '#05070d';
+  x.beginPath(); x.arc(0, 0, r, 0, 6.2832); x.fill();
+  x.restore();
+}
+
+function planet(x, cx, cy, r, fill, ring) {
+  x.save(); x.translate(cx, cy);
+  if (ring) {
+    x.save(); x.rotate(-.42); x.scale(1, .26);
+    x.strokeStyle = 'rgba(210,196,170,.42)'; x.lineWidth = 1.6 * devicePixelRatio;
+    x.beginPath(); x.arc(0, 0, r * 2.1, 0, 6.2832); x.stroke();
+    x.restore();
+  }
+  const g = x.createRadialGradient(-r * .35, -r * .35, r * .1, 0, 0, r);
+  g.addColorStop(0, fill[0]); g.addColorStop(1, fill[1]);
+  x.fillStyle = g;
+  x.beginPath(); x.arc(0, 0, r, 0, 6.2832); x.fill();
+  x.restore();
+}
+
+let TW = [];
+
 function sky() {
   const c = el('sky'), x = c.getContext('2d');
   const w = c.width = c.offsetWidth * devicePixelRatio;
   const h = c.height = c.offsetHeight * devicePixelRatio;
+  const tw = el('twinkle');
+  tw.width = w; tw.height = h;
   x.clearRect(0, 0, w, h);
+
+  // Fixed seed, so the sky is the same on every visit.
   let s = 20250803;
   const rnd = () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
-  const n = Math.round(w * h / 26000);
+
+  galaxy(x, w * .17, h * .78, Math.min(w, h) * .16, -.5, '150,175,225');
+  galaxy(x, w * .86, h * .30, Math.min(w, h) * .10, .8, '225,185,160');
+  blackHole(x, w * .47, h * .27, Math.min(w, h) * .019);
+  planet(x, w * .74, h * .80, Math.min(w, h) * .017, ['#b98a5e', '#5d3f27'], true);
+  planet(x, w * .09, h * .44, Math.min(w, h) * .009, ['#8fa9c9', '#2d4055'], false);
+
+  const n = Math.round(w * h / 24000);
   for (let i = 0; i < n; i++) {
     const r = (rnd() ** 2.4) * 1.5 * devicePixelRatio + .28 * devicePixelRatio;
-    x.globalAlpha = .12 + rnd() * .72;
+    x.globalAlpha = .10 + rnd() * .68;
     x.fillStyle = rnd() > .93 ? '#ffd9c0' : '#dfe6f5';
-    x.beginPath();
-    x.arc(rnd() * w, rnd() * h, r, 0, 6.2832);
-    x.fill();
+    x.beginPath(); x.arc(rnd() * w, rnd() * h, r, 0, 6.2832); x.fill();
   }
+  x.globalAlpha = 1;
+
+  // Constellations last, so their stars sit above the field.
+  TW = [];
+  const dim = w < 760;
+  for (const c2 of SKY) {
+    if (dim && ['Lyra', 'Orion'].includes(c2.n)) continue;
+    const p = project(c2, w, h);
+    x.strokeStyle = 'rgba(150,175,215,.20)';
+    x.lineWidth = 1 * devicePixelRatio;
+    x.beginPath();
+    for (const [a, b] of c2.ln) { x.moveTo(p[a][0], p[a][1]); x.lineTo(p[b][0], p[b][1]); }
+    x.stroke();
+    p.forEach((q, i) => {
+      const r = (i === 0 ? 2.1 : 1.6) * devicePixelRatio;
+      x.globalAlpha = .95;
+      x.fillStyle = '#f2f5ff';
+      x.beginPath(); x.arc(q[0], q[1], r, 0, 6.2832); x.fill();
+      TW.push({x: q[0], y: q[1], r: r, p: Math.random() * 6.2832,
+               sp: .5 + Math.random() * .7});
+    });
+    x.globalAlpha = 1;
+    const cx = p.reduce((a, q) => a + q[0], 0) / p.length;
+    const cy = Math.max(...p.map(q => q[1]));
+    x.fillStyle = 'rgba(150,175,215,.34)';
+    x.font = `${10 * devicePixelRatio}px -apple-system,Segoe UI,sans-serif`;
+    x.textAlign = 'center';
+    const label = LANG === 'ru' ? c2.ru : c2.n;
+    x.fillText(label.toUpperCase().split('').join(' '), cx, cy + 22 * devicePixelRatio);
+  }
+
+  // A handful of ordinary stars twinkle too, not only the named ones.
+  for (let i = 0; i < 40; i++)
+    TW.push({x: rnd() * w, y: rnd() * h, r: 1.1 * devicePixelRatio,
+             p: Math.random() * 6.2832, sp: .4 + Math.random() * .6});
+
+  startTwinkle();
+}
+
+let twRAF = null;
+function startTwinkle() {
+  const canvas = el('twinkle'), x = canvas.getContext('2d');
+  if (twRAF) cancelAnimationFrame(twRAF);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const draw = ts => {
+    x.clearRect(0, 0, canvas.width, canvas.height);
+    const t = ts / 1000;
+    for (const s2 of TW) {
+      const a = .30 + .45 * (Math.sin(t * s2.sp + s2.p) * .5 + .5);
+      x.globalAlpha = a;
+      x.fillStyle = '#ffffff';
+      x.beginPath(); x.arc(s2.x, s2.y, s2.r * (.75 + a * .4), 0, 6.2832); x.fill();
+    }
+    x.globalAlpha = 1;
+    twRAF = requestAnimationFrame(draw);
+  };
+  twRAF = requestAnimationFrame(draw);
 }
 
 fetch('catalog.json').then(r => r.json()).then(d => {
@@ -356,7 +550,9 @@ function apply() {
     if (only === 'txt' && !r[11]) return false;
     if (only === 'hand' && !(r[9] >= 60)) return false;
     if (only === 'typed' && !(r[9] >= 0 && r[9] < 40)) return false;
-    if (q && !(r[2].toLowerCase().includes(q) || String(r[1]).toLowerCase() === q))
+    if (q && !(r[2].toLowerCase().includes(q)
+            || (r[12] && r[12].toLowerCase().includes(q))
+            || String(r[1]).toLowerCase() === q))
       return false;
     return true;
   });
@@ -375,7 +571,7 @@ function render() {
 }
 
 function row(r) {
-  const [opis, delo, title, dates, , conj, pages, material, repro, cls, pid, txt] = r;
+  const [opis, delo, title, dates, , conj, pages, material, repro, cls, pid, txt, titleEn] = r;
   const s = t();
   const src = `https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=${pid}`;
   const links = [`<a class="src" href="${src}" rel="noopener">${esc(s.scans)}</a>`];
@@ -384,10 +580,15 @@ function row(r) {
     : `<span class="bar"><i style="width:${cls}%"></i></span><span class="mixlabel">${cls}%</span>`;
   const d = dates ? `<span class="${conj ? 'conj' : ''}">${esc(dates)}</span>` : '';
   const meta = [vocab('material', material), vocab('repro', repro)].filter(Boolean).join(', ');
+  // Перевод сверху, подлинная запись под ним: ссылаться архив умеет только
+  // на русское описание, поэтому подменять его нельзя, можно лишь дополнить.
+  const head = (LANG === 'en' && titleEn)
+    ? `${esc(titleEn)}<br><span class="orig">${esc(title)}</span>`
+    : esc(title);
   return `<tr>
     <td class="num">${esc(opis)}</td>
     <td class="num">${esc(delo)}</td>
-    <td class="ttl">${esc(title)}${meta ? `<br><span class="meta">${esc(meta)}</span>` : ''}</td>
+    <td class="ttl">${head}${meta ? `<br><span class="meta">${esc(meta)}</span>` : ''}</td>
     <td class="dates">${d}</td>
     <td class="num hidesm">${pages}</td>
     <td class="hidesm">${mix}</td>
@@ -402,6 +603,7 @@ el('lang').addEventListener('click', e => {
   if (!b || b.dataset.l === LANG) return;
   LANG = b.dataset.l;
   localStorage.setItem('lang', LANG);
+  sky();
   paint();
 });
 </script>

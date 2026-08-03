@@ -13,11 +13,15 @@ and carries fields a reader does not need; what goes to the browser is a
 compact array of arrays, which loads quickly and keeps the page usable on a
 phone.
 
-The page is bilingual. Its own text is held in the template, and the archive's
+The page is bilingual. Its own text is held in the template; the archive's
 descriptive vocabulary is glossed here into a Russian-to-English map, sent once
-rather than per row. Titles and dates are never glossed: a title is the
-archival record of what a document is called, and a translated one would give
-a citation the archive does not recognise.
+rather than per row; and the file descriptions are translated separately by
+translate_titles.py and joined in as an extra column.
+
+The Russian description is never replaced by its translation, only accompanied
+by it. The archive knows a file by its Russian description and by nothing else,
+so a citation built on the English alone would not resolve. The site shows the
+translation first and the original underneath.
 
     python3 build_site.py
 """
@@ -36,7 +40,17 @@ OUT = os.path.join(ROOT, "docs")
 # Column order in the compact rows. The browser unpacks by index, so this
 # must match the JavaScript in the template.
 COLUMNS = ["opis", "delo", "title", "dates", "year", "conj", "pages",
-           "material", "repro", "cls", "portal_id", "txt"]
+           "material", "repro", "cls", "portal_id", "txt", "title_en"]
+
+
+def titles_en():
+    """English translations of the file descriptions, by portal id."""
+    path = os.path.join(ROOT, "title_en.csv")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return {r["portal_id"]: r["title_en"] for r in csv.DictReader(f)
+                if r["title_en"] and r["title_en"] != r["title_ru"]}
 
 
 def transcribed():
@@ -76,6 +90,7 @@ def main():
     cat = json.load(open(os.path.join(ROOT, "catalog.json"), encoding="utf-8"))
     txt = transcribed()
     mix = page_mix()
+    en = titles_en()
 
     rows = []
     for r in cat["files"]:
@@ -93,6 +108,7 @@ def main():
             mix.get(k, -1),
             r["portal_id"],
             txt.get(k, ""),
+            en.get(str(r["portal_id"]), ""),
         ])
     rows.sort(key=lambda x: (x[0], int(re.sub(r"\D", "", x[1]) or 0), x[1]))
 
@@ -108,6 +124,7 @@ def main():
         "scans": sum(r[6] for r in rows),
         "dated": sum(1 for r in rows if r[4]),
         "transcribed": sum(1 for r in rows if r[11]),
+        "translated": sum(1 for r in rows if r[12]),
         "rows": rows,
     }
     with open(os.path.join(OUT, "catalog.json"), "w", encoding="utf-8") as f:
@@ -119,6 +136,7 @@ def main():
     kept = sum(1 for k, v in data["vocab"]["material"].items() if v != k)
     print(f"  docs/catalog.json  {size} KB, {len(rows)} files")
     print(f"  glossed material types: {kept} of {len(data['vocab']['material'])}")
+    print(f"  translated descriptions: {data['translated']} of {len(rows)}")
     print(f"  docs/index.html")
     print(f"  dated {data['dated']}, transcribed {data['transcribed']}")
 
