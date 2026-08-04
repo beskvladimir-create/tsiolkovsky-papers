@@ -13,3 +13,6 @@ page_metrics.csv
 __pycache__/
 *.pyc
 .DS_Store
+
+# Статья не публикуется до подачи: приоритет за автором.
+paper/
