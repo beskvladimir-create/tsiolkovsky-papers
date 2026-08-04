@@ -102,6 +102,7 @@ a.src:hover{border-bottom-color:var(--accent)}
   background:var(--typed);position:relative;overflow:hidden;vertical-align:middle}
 .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--hand)}
 .mixlabel{font-size:11px;color:var(--dim);margin-left:7px;font-variant-numeric:tabular-nums}
+.more[hidden]{display:none}
 .more{display:block;margin:0 auto 70px;padding:12px 26px;font:inherit;font-size:13px;
   letter-spacing:.09em;text-transform:uppercase;background:transparent;color:var(--fg);
   border:1px solid var(--line);border-radius:2px;cursor:pointer}
@@ -272,6 +273,42 @@ const T = {
       + `<a href="https://vladimir.besk.tech/" rel="noopener">Владимир Бескоровайный</a>, 2026.</p>`,
  },
 };
+
+
+/* The archive writes dates in Russian and as d.m.yyyy, which an English reader
+   will misread as month-first. Rendering them unambiguously is a lossless
+   change: nothing is added or dropped, only the month is named and the order
+   made explicit. The archive's own wording stays in the cell's tooltip, since
+   that is what a citation has to quote. */
+const MONTHS_RU = ['январ','феврал','март','апрел','ма','июн','июл','август',
+                   'сентябр','октябр','ноябр','декабр'];
+const MONTHS_EN = ['January','February','March','April','May','June','July',
+                   'August','September','October','November','December'];
+
+function enDate(raw) {
+  if (!raw) return '';
+  let t = raw;
+  if (/^\s*\[?\s*б\/д\s*\]?\s*$/i.test(t)) return t.includes('[') ? '[n.d.]' : 'n.d.';
+  // d-V-yyyy: the month as a Roman numeral, as archivists often write it
+  const ROMAN = {I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10,XI:11,XII:12};
+  t = t.replace(/\b(\d{1,2})\s*-\s*([IVX]{1,4})\s*-\s*(1[89]\d\d)/g,
+    (m, d, r, y) => ROMAN[r.toUpperCase()]
+      ? `${+d} ${MONTHS_EN[ROMAN[r.toUpperCase()] - 1]} ${y}` : m);
+  // d.m.yyyy -> 8 June 1926
+  t = t.replace(/\b(\d{1,2})\.(\d{1,2})\.(1[89]\d\d)/g,
+    (m, d, mo, y) => (+mo >= 1 && +mo <= 12) ? `${+d} ${MONTHS_EN[+mo - 1]} ${y}` : m);
+  // m.yyyy -> June 1926
+  t = t.replace(/\b(\d{1,2})\.(1[89]\d\d)/g,
+    (m, mo, y) => (+mo >= 1 && +mo <= 12) ? `${MONTHS_EN[+mo - 1]} ${y}` : m);
+  // Словесные месяцы. Без \b: в JavaScript граница слова считается по
+  // латинице, и перед кириллической буквой она не срабатывает.
+  MONTHS_RU.forEach((stem, i) => {
+    t = t.replace(new RegExp('(^|[^а-яё])' + stem + '[а-яё]*', 'gi'),
+                  (m, pre) => pre + MONTHS_EN[i]);
+  });
+  t = t.replace(/\s*г\.\s*/g, ' ').replace(/\s*-\s*/g, ' – ');
+  return t.replace(/\s+/g, ' ').replace(/\[\s+/g, '[').replace(/\s+\]/g, ']').trim();
+}
 
 const t = () => T[LANG];
 const nf = n => n.toLocaleString(LANG === 'ru' ? 'ru' : 'en');
@@ -578,7 +615,10 @@ function row(r) {
   if (txt) links.push(`<a class="src" href="${REPO}/blob/main/corpus/${txt}.md" rel="noopener">${esc(s.text)}</a>`);
   const mix = cls < 0 ? '<span class="mixlabel">—</span>'
     : `<span class="bar"><i style="width:${cls}%"></i></span><span class="mixlabel">${cls}%</span>`;
-  const d = dates ? `<span class="${conj ? 'conj' : ''}">${esc(dates)}</span>` : '';
+  const shown = LANG === 'en' ? enDate(dates) : dates;
+  const d = dates
+    ? `<span class="${conj ? 'conj' : ''}" title="${esc(dates)}">${esc(shown)}</span>`
+    : '';
   const meta = [vocab('material', material), vocab('repro', repro)].filter(Boolean).join(', ');
   // Перевод сверху, подлинная запись под ним: ссылаться архив умеет только
   // на русское описание, поэтому подменять его нельзя, можно лишь дополнить.
