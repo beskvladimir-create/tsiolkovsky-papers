@@ -391,36 +391,11 @@ function galaxy(x, cx, cy, r, tilt, hue) {
   x.restore(); x.globalAlpha = 1;
 }
 
-function blackHole(x, cx, cy, r) {
-  // The shadow, a thin accretion ring seen almost edge on, and the arc of
-  // light bent over the top. Kept dim: it is a background, not an exhibit.
+function planet(x, cx, cy, r, fill) {
+  // One small disc, far out and unlit on one side. No rings: a ringed body
+  // drawn at this scale reads as an ornament, which is the wrong note for a
+  // page whose subject is an archive.
   x.save(); x.translate(cx, cy);
-  const halo = x.createRadialGradient(0, 0, r * .9, 0, 0, r * 3.4);
-  halo.addColorStop(0, 'rgba(255,170,110,.13)');
-  halo.addColorStop(1, 'rgba(255,170,110,0)');
-  x.fillStyle = halo;
-  x.beginPath(); x.arc(0, 0, r * 3.4, 0, 6.2832); x.fill();
-  x.save(); x.scale(1, .22);
-  x.strokeStyle = 'rgba(255,196,140,.55)'; x.lineWidth = 1.5 * devicePixelRatio;
-  x.beginPath(); x.arc(0, 0, r * 2.05, 0, 6.2832); x.stroke();
-  x.strokeStyle = 'rgba(255,150,90,.22)'; x.lineWidth = 4 * devicePixelRatio;
-  x.beginPath(); x.arc(0, 0, r * 2.5, 0, 6.2832); x.stroke();
-  x.restore();
-  x.strokeStyle = 'rgba(255,205,150,.42)'; x.lineWidth = 1.4 * devicePixelRatio;
-  x.beginPath(); x.arc(0, 0, r * 2.05, Math.PI, 0); x.stroke();
-  x.fillStyle = '#05070d';
-  x.beginPath(); x.arc(0, 0, r, 0, 6.2832); x.fill();
-  x.restore();
-}
-
-function planet(x, cx, cy, r, fill, ring) {
-  x.save(); x.translate(cx, cy);
-  if (ring) {
-    x.save(); x.rotate(-.42); x.scale(1, .26);
-    x.strokeStyle = 'rgba(210,196,170,.42)'; x.lineWidth = 1.6 * devicePixelRatio;
-    x.beginPath(); x.arc(0, 0, r * 2.1, 0, 6.2832); x.stroke();
-    x.restore();
-  }
   const g = x.createRadialGradient(-r * .35, -r * .35, r * .1, 0, 0, r);
   g.addColorStop(0, fill[0]); g.addColorStop(1, fill[1]);
   x.fillStyle = g;
@@ -444,9 +419,7 @@ function sky() {
 
   galaxy(x, w * .17, h * .78, Math.min(w, h) * .16, -.5, '150,175,225');
   galaxy(x, w * .86, h * .30, Math.min(w, h) * .10, .8, '225,185,160');
-  blackHole(x, w * .47, h * .27, Math.min(w, h) * .019);
-  planet(x, w * .74, h * .80, Math.min(w, h) * .017, ['#b98a5e', '#5d3f27'], true);
-  planet(x, w * .09, h * .44, Math.min(w, h) * .009, ['#8fa9c9', '#2d4055'], false);
+  planet(x, w * .09, h * .44, Math.min(w, h) * .009, ['#8fa9c9', '#2d4055']);
 
   const n = Math.round(w * h / 24000);
   for (let i = 0; i < n; i++) {
@@ -468,15 +441,13 @@ function sky() {
     x.beginPath();
     for (const [a, b] of c2.ln) { x.moveTo(p[a][0], p[a][1]); x.lineTo(p[b][0], p[b][1]); }
     x.stroke();
+    // The named stars are not drawn here. They live on the moving layer, so
+    // that their brightness can swing over its whole range instead of being
+    // a faint modulation on top of a star already painted at full strength.
     p.forEach((q, i) => {
-      const r = (i === 0 ? 2.1 : 1.6) * devicePixelRatio;
-      x.globalAlpha = .95;
-      x.fillStyle = '#f2f5ff';
-      x.beginPath(); x.arc(q[0], q[1], r, 0, 6.2832); x.fill();
-      TW.push({x: q[0], y: q[1], r: r, p: Math.random() * 6.2832,
-               sp: .5 + Math.random() * .7});
+      TW.push({x: q[0], y: q[1], r: (i === 0 ? 2.4 : 1.8) * devicePixelRatio,
+               ph: Math.random() * 6.2832, sp: .6 + Math.random() * .9, lead: true});
     });
-    x.globalAlpha = 1;
     const cx = p.reduce((a, q) => a + q[0], 0) / p.length;
     const cy = Math.max(...p.map(q => q[1]));
     x.fillStyle = 'rgba(150,175,215,.34)';
@@ -486,10 +457,11 @@ function sky() {
     x.fillText(label.toUpperCase().split('').join(' '), cx, cy + 22 * devicePixelRatio);
   }
 
-  // A handful of ordinary stars twinkle too, not only the named ones.
-  for (let i = 0; i < 40; i++)
+  // A handful of ordinary stars breathe as well, so the sky is not a grid of
+  // blinking landmarks over a dead field.
+  for (let i = 0; i < 50; i++)
     TW.push({x: rnd() * w, y: rnd() * h, r: 1.1 * devicePixelRatio,
-             p: Math.random() * 6.2832, sp: .4 + Math.random() * .6});
+             ph: Math.random() * 6.2832, sp: .3 + Math.random() * .5, lead: false});
 
   startTwinkle();
 }
@@ -498,17 +470,28 @@ let twRAF = null;
 function startTwinkle() {
   const canvas = el('twinkle'), x = canvas.getContext('2d');
   if (twRAF) cancelAnimationFrame(twRAF);
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const draw = ts => {
+  const paintStars = t => {
     x.clearRect(0, 0, canvas.width, canvas.height);
-    const t = ts / 1000;
-    for (const s2 of TW) {
-      const a = .30 + .45 * (Math.sin(t * s2.sp + s2.p) * .5 + .5);
+    for (const st of TW) {
+      // Named stars swing wide and stay bright at the bottom of the swing;
+      // the field stars only breathe, or the whole sky would flicker.
+      const w = Math.sin(t * st.sp + st.ph) * .5 + .5;
+      const a = st.lead ? .45 + .55 * w : .22 + .34 * w;
       x.globalAlpha = a;
-      x.fillStyle = '#ffffff';
-      x.beginPath(); x.arc(s2.x, s2.y, s2.r * (.75 + a * .4), 0, 6.2832); x.fill();
+      x.fillStyle = st.lead ? '#f4f7ff' : '#dfe6f5';
+      x.beginPath();
+      x.arc(st.x, st.y, st.r * (.7 + a * .5), 0, 6.2832);
+      x.fill();
     }
     x.globalAlpha = 1;
+  };
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    paintStars(0);          // still, but still there
+    return;
+  }
+  const draw = ts => {
+    paintStars(ts / 1000);
     twRAF = requestAnimationFrame(draw);
   };
   twRAF = requestAnimationFrame(draw);
