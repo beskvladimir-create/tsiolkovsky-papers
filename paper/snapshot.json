@@ -1,0 +1,15 @@
+{
+ "arxiv": "2608.03617",
+ "submitted": "2026-08-04",
+ "note": "Figures as printed in arXiv:2608.03617 v1. The corpus has grown since; see section 8 of the paper. These must not be edited to match live data: the repository copy has to remain the paper that was submitted.",
+ "corpus_files": 322,
+ "corpus_sheets": 5454,
+ "uncertainty_marks": 35961,
+ "deletions": 4022,
+ "live_at_snapshot": {
+  "files": 340,
+  "sheets": 6941,
+  "marks": 42904,
+  "deletions": 4816
+ }
+}

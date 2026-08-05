@@ -28,13 +28,21 @@ OUT = os.path.join(ROOT, "paper", "paper.tex")
 TITLE = ("A machine-readable catalogue of the Tsiolkovsky papers "
          "(fond 555, Archive of the Russian Academy of Sciences), and a way to "
          "measure how well its handwriting can be read")
-AUTHOR = "Vladimir Beskorovainyi"
+AUTHOR = r"""Vladimir Beskorovainyi \\[2pt]
+\small Besk Tech \ $|$ \ Moscow Institute of Technology and Physics (MIPT) \\[2pt]
+\small \texttt{admin@besk.tech} \ $|$ \ \texttt{https://vladimir.besk.tech} \ $|$ \ ORCID: 0009-0004-7005-6242"""
 
 PREAMBLE = r"""\documentclass[11pt,a4paper]{article}
 
 %% Cyrillic is load-bearing here, not decoration: archival file titles and the
 %% portal's field names are quoted as the archive records them, because a
 %% citation resolves on the Russian wording and on nothing else.
+%%
+%% This order is the one that compiled and rendered correctly on arXiv, umlauts
+%% and all. It looked wrong at first: extracting the text layer of the PDF gave
+%% "Str\"obel" with the diaeresis detached, which reads as a font-encoding
+%% fault. The rendered page is correct; the detachment is an artefact of text
+%% extraction. Left alone deliberately.
 \usepackage[T1,T2A]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english,russian]{babel}

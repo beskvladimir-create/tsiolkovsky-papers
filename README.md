@@ -1,6 +1,7 @@
 # Tsiolkovsky Papers
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21705221.svg)](https://doi.org/10.5281/zenodo.21705221)
+[![arXiv](https://img.shields.io/badge/arXiv-2608.03617-b31b1b.svg)](https://arxiv.org/abs/2608.03617)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
 [![Catalogue: CC0](https://img.shields.io/badge/catalogue-CC0-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
 
@@ -298,6 +299,20 @@ measured against published texts rather than asserted.
 - The rest of the fond: 45,554 scans not yet transcribed
 - English translations of the principal works
 - A paper describing the method
+
+## The paper
+
+The method and the measurements are described in a preprint:
+
+> Beskorovainyi, V. (2026). A machine-readable catalogue of the Tsiolkovsky
+> papers (fond 555, Archive of the Russian Academy of Sciences), and a way to
+> measure how well its handwriting can be read. arXiv:2608.03617.
+
+Source and generated LaTeX are in [`paper/`](paper/). The figures in it are a
+snapshot: the corpus grows with each night's transcription, so `check_paper.py`
+verifies the text against `paper/snapshot.json`, the state it was submitted in,
+and reports separately how far the live data has moved since. The paper here is
+the paper that was submitted, not a running edit of it.
 
 ## Sources and licensing
 

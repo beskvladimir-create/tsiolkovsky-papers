@@ -57,6 +57,20 @@ def main():
     ab = load("ab_models.csv")
     files, sheets, marks, struck = corpus()
 
+    # Figures that depend on the corpus are checked against the snapshot the
+    # paper was submitted with, not against today's data. The repository copy
+    # must stay the paper that went to arXiv; drift is reported separately, as
+    # information rather than as a fault.
+    snap = {}
+    sp = os.path.join(ROOT, "paper", "snapshot.json")
+    if os.path.exists(sp):
+        import json
+        snap = json.load(open(sp, encoding="utf-8"))
+    cf = snap.get("corpus_files", files)
+    cs = snap.get("corpus_sheets", sheets)
+    cm = snap.get("uncertainty_marks", marks)
+    cd = snap.get("deletions", struck)
+
     checks = [
         ("files in the fond", f"{len(cat):,} files"),
         ("scans", f"{sum(int(r['pages'] or 0) for r in cat):,} scans"),
@@ -65,9 +79,9 @@ def main():
         ("handwritten", f"{cls['hand']:,}"),
         ("typewritten", f"{cls['typed']:,}"),
         ("notes", f"{cls['note']:,}"),
-        ("corpus", f"{files} files and {sheets:,} scans"),
-        ("uncertainty marks", f"{marks:,} uncertainty marks"),
-        ("deletions", f"{struck:,} passages struck out"),
+        ("corpus (as submitted)", f"{cf} files and {cs:,} scans"),
+        ("uncertainty marks", f"{cm:,} uncertainty marks"),
+        ("deletions", f"{cd:,} passages struck out"),
     ]
     if cal:
         agree = st.median(float(r["ratio"]) for r in cal)
@@ -103,9 +117,9 @@ def main():
     # "all 2,019 files and 51,008 scans" is the fond, not the corpus; the
     # corpus is always introduced by "currently" or "holds".
     for pat, want in ((r"(?:currently|holds) (\d[\d,]*) (?:archival )?files and [\d,]+ scans",
-                       f"{files:,}"),
+                       f"{cf:,}"),
                       (r"(?:currently|holds) [\d,]+ (?:archival )?files and ([\d,]*) scans",
-                       f"{sheets:,}")):
+                       f"{cs:,}")):
         found = set(re.findall(pat, text))
         odd = found - {want}
         if odd:
@@ -126,6 +140,10 @@ def main():
         print(f"  разобраться нужно вручную, скрипт этого не различает.")
     else:
         print(f"  все {len(checks)} величин совпадают с данными")
+    if snap and files != cf:
+        print(f"\n  корпус вырос с публикации: было {cf} дел и {cs:,} листов, "
+              f"стало {files} и {sheets:,}.")
+        print(f"  это не расхождение, а то, что раздел 8 статьи и предсказывает.")
     return 1 if bad else 0
 
 
