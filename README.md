@@ -9,8 +9,9 @@ Tsiolkovsky — all 2,019 files, 51,008 scans — and the pipeline that produced
 it.**
 
 **Browse it: <https://beskvladimir-create.github.io/tsiolkovsky-papers/>** —
-the whole fond in one table, searchable, filterable by inventory, decade and
-page type, with links to the archive's scans and to the transcriptions.
+the whole fond in one table, searchable by title and — where a file has been
+transcribed — by the words inside it, filterable by inventory, decade and page
+type, with links to the archive's scans and to the transcriptions.
 
 Konstantin Tsiolkovsky (1857–1935) derived the rocket equation and described
 the multistage rocket, the orbital station and the space elevator decades
@@ -250,6 +251,7 @@ it.
 | `night_run.sh` | Runs the queue overnight and stops at a fixed hour, so the day's quota stays free |
 | `assemble.py` | Assembles per-scan output into one document per archival file |
 | `build_site.py` | Builds the browsable site from the catalogue into `docs/` |
+| `build_index.py` | Builds the full-text index the site searches |
 | `sync.sh` | Copies the published scripts into the working directory, so the two do not drift |
 | `TRANSCRIPTION_SPEC.md` | The fixed per-page instruction given to the model |
 

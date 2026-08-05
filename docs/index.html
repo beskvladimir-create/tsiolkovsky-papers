@@ -77,6 +77,10 @@ input[type=search]{flex:1;min-width:230px}
 input[type=search]:focus,select:focus{outline:0;border-color:var(--accent)}
 .count{color:var(--dim);font-size:12.5px;margin-left:auto;font-variant-numeric:tabular-nums}
 .legend{font-size:12px;color:var(--dim);margin:11px 0 0;max-width:96ch}
+.ftline{font-size:12.5px;color:var(--dim);margin:11px 0 0}
+.ftline label{cursor:pointer}
+.ftline input{vertical-align:-1px;margin-right:5px;accent-color:var(--accent)}
+.ftnote{margin-left:10px;opacity:.75}
 
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px;margin:2px 0 40px;
@@ -160,6 +164,8 @@ footer p{max-width:78ch}
       <select id="only"></select>
       <span class="count" id="count"></span>
     </div>
+    <p class="ftline"><label><input type="checkbox" id="ft"> <span id="ftlabel"></span></label>
+      <span class="ftnote" id="ftnote"></span></p>
     <p class="legend" id="legend"></p>
   </div>
 
@@ -213,6 +219,10 @@ const T = {
   of: (a, b) => `${a} of ${b}`,
   head: ['Opis', 'File', 'Title', 'Dates', 'Sheets', 'Type', 'Links'],
   scans: 'scans', text: 'text',
+  ft: 'search inside the transcriptions',
+  ftLoading: 'loading the index…',
+  ftReady: n => `${n} files carry transcriptions; the rest are catalogue only`,
+  ftHits: (f, w) => `${f} files match, ${w} word forms`,
   more: n => `Show ${n} more`,
   legend: 'The bar under Type gives the share of handwritten sheets in a file: '
         + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> autograph, '
@@ -257,6 +267,10 @@ const T = {
   of: (a, b) => `${a} из ${b}`,
   head: ['Опись', 'Дело', 'Название', 'Даты', 'Листов', 'Тип', 'Ссылки'],
   scans: 'сканы', text: 'текст',
+  ft: 'искать внутри расшифровок',
+  ftLoading: 'загружаю указатель…',
+  ftReady: n => `расшифровано ${n} дел, остальные только по каталогу`,
+  ftHits: (f, w) => `совпало дел: ${f}, словоформ: ${w}`,
   more: n => `Показать ещё ${n}`,
   legend: 'Полоса в столбце «Тип» показывает долю рукописных листов в деле: '
         + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> автограф, '
@@ -308,6 +322,59 @@ function enDate(raw) {
   });
   t = t.replace(/\s*г\.\s*/g, ' ').replace(/\s*-\s*/g, ' – ');
   return t.replace(/\s+/g, ' ').replace(/\[\s+/g, '[').replace(/\s+\]/g, ']').trim();
+}
+
+/* Full-text search. The index is fetched only when asked for: it is half a
+   megabyte over the wire, and most visits never need it. Russian is matched by
+   prefix rather than stemmed — "ракет" finds ракета, ракетахъ, ракетоплан —
+   because a stemmer needs a dictionary this page cannot carry, and showing too
+   much beats finding nothing. */
+let FT = null, ftState = 'off';
+
+async function loadIndex() {
+  if (FT || ftState === 'loading') return;
+  ftState = 'loading';
+  el('ftnote').textContent = t().ftLoading;
+  try {
+    FT = await (await fetch('fulltext.json')).json();
+    FT.keys = Object.keys(FT.index);      // already sorted by the builder
+    ftState = 'on';
+  } catch (e) {
+    ftState = 'off';
+    el('ft').checked = false;
+  }
+  el('ftnote').textContent = '';
+  apply();
+}
+
+// First key at or after the prefix; the keys are sorted, so the matching
+// range is contiguous and a scan from here stops as soon as it leaves it.
+function lowerBound(keys, p) {
+  let lo = 0, hi = keys.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (keys[mid] < p) lo = mid + 1; else hi = mid;
+  }
+  return lo;
+}
+
+function ftMatch(q) {
+  if (!FT) return null;
+  const terms = q.split(/\s+/).filter(x => x.length >= 3)
+                 .map(x => x.replace(/ё/g, 'е'));
+  if (!terms.length) return null;
+  let acc = null, forms = 0;
+  for (const term of terms) {
+    const hit = new Set();
+    for (let i = lowerBound(FT.keys, term); i < FT.keys.length; i++) {
+      if (!FT.keys[i].startsWith(term)) break;
+      forms++;
+      for (const id of FT.index[FT.keys[i]]) hit.add(id);
+    }
+    acc = acc === null ? hit : new Set([...acc].filter(x => hit.has(x)));
+    if (!acc.size) break;
+  }
+  return {files: new Set([...acc].map(i => FT.files[i])), forms};
 }
 
 const t = () => T[LANG];
@@ -537,6 +604,7 @@ function paint() {
   el('chronTitle').textContent = s.chronTitle;
   el('chronNote').textContent = s.chronNote;
   el('legend').innerHTML = s.legend;
+  el('ftlabel').textContent = s.ft;
   el('foot').innerHTML = s.foot;
   el('q').placeholder = s.search;
   el('head').innerHTML = s.head
@@ -563,6 +631,9 @@ function paint() {
 
 function apply() {
   const q = el('q').value.trim().toLowerCase();
+  const ft = (ftState === 'on' && q) ? ftMatch(q) : null;
+  if (ft) el('ftnote').textContent = t().ftHits(ft.files.size, ft.forms);
+  else if (ftState === 'on') el('ftnote').textContent = t().ftReady(FT.files.length);
   const o = el('opis').value, dc = el('decade').value, only = el('only').value;
   view = DATA.rows.filter(r => {
     if (o && r[0] !== o) return false;
@@ -570,10 +641,13 @@ function apply() {
     if (only === 'txt' && !r[11]) return false;
     if (only === 'hand' && !(r[9] >= 60)) return false;
     if (only === 'typed' && !(r[9] >= 0 && r[9] < 40)) return false;
-    if (q && !(r[2].toLowerCase().includes(q)
-            || (r[12] && r[12].toLowerCase().includes(q))
-            || String(r[1]).toLowerCase() === q))
-      return false;
+    if (q) {
+      const inTitle = r[2].toLowerCase().includes(q)
+                   || (r[12] && r[12].toLowerCase().includes(q))
+                   || String(r[1]).toLowerCase() === q;
+      const inText = ft && r[11] && ft.files.has(r[11]);
+      if (!inTitle && !inText) return false;
+    }
     return true;
   });
   el('count').textContent = t().of(nf(view.length), nf(DATA.rows.length));
@@ -620,6 +694,10 @@ function row(r) {
 }
 
 ['q', 'opis', 'decade', 'only'].forEach(id => el(id).addEventListener('input', apply));
+el('ft').addEventListener('change', e => {
+  if (e.target.checked) { ftState = FT ? 'on' : 'off'; loadIndex(); }
+  else { ftState = 'off'; el('ftnote').textContent = ''; apply(); }
+});
 el('more').addEventListener('click', render);
 el('lang').addEventListener('click', e => {
   const b = e.target.closest('button');
