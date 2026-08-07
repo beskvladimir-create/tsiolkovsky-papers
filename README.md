@@ -33,7 +33,7 @@ This repository closes the first of those gaps.
 | `title_en.csv` | **English translations of all 2,019 file descriptions**, beside the Russian original, which stays the citable record |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
 | `priority_bolide.csv` | The 1934 bolide correspondence: 221 files, 970 sheets |
-| `corpus/` | **Transcriptions**, one file per archival file. 322 files, 5,454 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
+| `corpus/` | **Transcriptions**, one file per archival file. 359 files, 7,932 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
 | `reading_calibration.csv` | 294 manuscript/typescript pairs of one text, with the agreement of the two readings — the noise floor for any textual comparison |
 | Pipeline | Retrieval, page classification, transcription and scoring — the code that produced the above and can reproduce it |
 
@@ -296,7 +296,7 @@ measured against published texts rather than asserted.
 ## What comes next
 
 - The 1934 bolide correspondence: 221 files, 970 scans — **complete**
-- The rest of the fond: 45,554 scans not yet transcribed
+- The rest of the fond: 43,076 scans not yet transcribed
 - English translations of the principal works
 - A paper describing the method
 
