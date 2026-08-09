@@ -35,6 +35,22 @@ STOP_HOUR="${STOP_HOUR:-4}"
 MAX_BATCHES="${MAX_BATCHES:-100000}"
 MAX_MINUTES="${MAX_MINUTES:-0}"
 IGNORE_WINDOW="${IGNORE_WINDOW:-0}"
+
+# launchd starts with a bare environment, and claude does not live on that PATH.
+# Without this every call fails instantly, and a run that cannot work at all
+# marches through the queue marking scan after scan failed: 7,639 of them in one
+# night, none of them read.
+CLAUDE="${CLAUDE:-$HOME/.local/bin/claude}"
+[ -x "$CLAUDE" ] || CLAUDE="$(command -v claude 2>/dev/null)"
+if [ -z "$CLAUDE" ] || [ ! -x "$CLAUDE" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') claude not found; refusing to start" >&2
+    exit 1
+fi
+
+# A batch may fail on its own account. Every batch failing means the pipeline is
+# broken, and the right response is to stop rather than to consume the queue.
+MAX_STREAK="${MAX_STREAK:-5}"
+STREAK=0
 STARTED=$(date +%s)
 OUT=data/transcripts_raw
 mkdir -p "$OUT"
@@ -94,22 +110,41 @@ $(echo "$PATHS" | sed "s|^|$PWD/|")
 разделённые строкой-маркером вида === ИМЯ_ФАЙЛА === перед каждым листом,
 например === 003.jpg ===. Никакого вступления и никаких выводов."
 
-    RESP=$(echo "$PROMPT" | claude -p --model "$MODEL" --allowedTools Read 2>&1)
+    RESP=$(echo "$PROMPT" | "$CLAUDE" -p --model "$MODEL" --allowedTools Read 2>&1)
     RC=$?
 
     if echo "$RESP" | grep -qiE "session limit|rate.?limit|usage limit|exceeded your"; then
-        log "HIT THE SUBSCRIPTION LIMIT, stopping. This batch is not counted."
+        log "hit the subscription limit; this batch is not counted"
         log "$(echo "$RESP" | grep -iE 'limit|reset' | head -2)"
+        # This is the five-hour session window, not the week's, and the reply
+        # says when it lifts. Leaving at that point throws away the rest of the
+        # night: on 8 August the run stopped at 00:34 for a limit that lifted at
+        # 01:00 and never came back. Wait it out instead.
+        WAIT=$(echo "$RESP" | python3 reset_wait.py 2>/dev/null || echo 0)
+        if [ "${WAIT:-0}" -gt 0 ]; then
+            log "limit lifts in $((WAIT/60)) min; waiting rather than losing the night"
+            sleep "$WAIT"
+            STREAK=0
+            continue
+        fi
+        log "no usable reset time in the reply, stopping"
         break
     fi
     if [ $RC -ne 0 ] || [ -z "$RESP" ]; then
         log "failure (code $RC), marking the batch failed and carrying on"
         python3 mark_batch.py failed $IDS
+        STREAK=$((STREAK+1))
+        if [ "$STREAK" -ge "$MAX_STREAK" ]; then
+            log "$MAX_STREAK batches failed in a row: something is broken, not busy."
+            log "stopping so the queue is not burned through. Last reply: $(echo "$RESP" | head -1)"
+            break
+        fi
         n=$((n+1)); sleep 10; continue
     fi
 
     printf '%s' "$RESP" | python3 save_batch.py $IDS
     python3 mark_batch.py done $IDS
+    STREAK=0   # only a batch that actually came back clears the streak
     n=$((n+1))
     sleep 3
 done
