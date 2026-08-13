@@ -1,14 +1,19 @@
 # Corpus
 
-Transcriptions of fond 555, one Markdown file per archival file, released as
-work proceeds rather than held back until the fond is finished.
+Transcriptions of fond 555, one Markdown file per archival file. The fond is
+now transcribed whole.
 
 ## What is here
 
-See the file list in this directory: **393 archival files, 9,796 scans**,
-across all five inventories. The rocketry core is complete, including both
-variants of "The Spaceship" (files 46 and 47), "Exploration of Celestial Space
-by Means of Reaction Devices" (34) and "The Reaction Device — the Rocket" (35).
+See the file list in this directory: **2,018 archival files of 2,019, 50,962
+scans**, across all five inventories — the whole fond, including both variants
+of "The Spaceship" (files 46 and 47), "Exploration of Celestial Space by Means
+of Reaction Devices" (34) and "The Reaction Device — the Rocket" (35).
+
+One file is missing: two scans of opis 4, file 340 are refused by every model
+tried, which stops the file from being assembled. The refusal is a filter
+against reproducing known text verbatim, and it is recorded here rather than
+worked around.
 
 Every file here is transcribed **in full**. Partially transcribed files are
 not published: a partial transcription reads as a complete text with the
@@ -37,7 +42,7 @@ and ѳ. Nothing is silently modernised.
 This is a **machine transcription with uncertainty marked**, not a scholarly
 edition. It has not been checked by a human against the scans.
 
-Across these 9,796 scans there are **62,108 uncertainty marks** — about seven
+Across these 50,962 scans there are **309,900 uncertainty marks** — about six
 per scan. That is the point of the method rather than a defect of it: a
 transcription whose doubtful places are visible can be checked and corrected
 where it matters, while one that reads smoothly because uncertain words were
@@ -47,6 +52,15 @@ For the measured accuracy figures and how they were obtained, see the main
 README and `validate.py`. In short, against published editions: **98.1% at
 character level on typescript, 81.1% on handwriting** once orthography is
 folded onto modern spelling.
+
+Those two figures were scored on the part of the corpus read by the earlier
+pipeline. The rest was read by a different model and has not been scored
+against the editions, so the figures should not be read as covering the whole.
+What was measured on the whole is agreement between two readings of one text —
+a handwritten sheet against the typed copy of it in the same file — and it is
+the same for both parts, 37% over 1,371 pairs from 194 files. That says the
+newer part is read no worse than the older one; it does not establish 81% for
+it. See `check_batch_quality.py`.
 
 That gap sets a limit worth stating plainly. Two independent readings of one
 and the same handwritten page agree on a median 37% of words, and the longest

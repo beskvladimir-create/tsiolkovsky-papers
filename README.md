@@ -33,8 +33,9 @@ This repository closes the first of those gaps.
 | `title_en.csv` | **English translations of all 2,019 file descriptions**, beside the Russian original, which stays the citable record |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
 | `priority_bolide.csv` | The 1934 bolide correspondence: 221 files, 970 sheets |
-| `corpus/` | **Transcriptions**, one file per archival file. 393 files, 9,796 scans, released as work proceeds — see [`corpus/README.md`](corpus/README.md) |
+| `corpus/` | **Transcriptions**, one file per archival file. 2,018 files of 2,019, 50,962 scans — the whole fond. See [`corpus/README.md`](corpus/README.md) |
 | `reading_calibration.csv` | 294 manuscript/typescript pairs of one text, with the agreement of the two readings — the noise floor for any textual comparison |
+| `gemini_hand_measurement.csv` | What each candidate model scores on handwriting, against the typed copy of the same text, with the pipeline as the baseline on the same sheets |
 | Pipeline | Retrieval, page classification, transcription and scoring — the code that produced the above and can reproduce it |
 
 The catalogue is released **CC0**; the code is **MIT**.
@@ -296,7 +297,17 @@ measured against published texts rather than asserted.
 ## What comes next
 
 - The 1934 bolide correspondence: 221 files, 970 scans — **complete**
-- The rest of the fond: 41,212 scans not yet transcribed
+- The rest of the fond: 41,212 scans — **complete**, read in one night in batch
+  mode for about $39. Which model to use was decided by measurement rather than
+  by price list: `measure_gemini_hand.py` scores candidates on handwriting
+  against the typed copy of the same text, with the existing pipeline as the
+  baseline on the same sheets. On typical handwriting no model beat the
+  pipeline; the cheap one was simply not worse, because the limit is the
+  material and not the model. `batch_run.py` submits the queue,
+  `check_batch_quality.py` verifies what came back
+- Scoring the newer part of the corpus against published editions: not done.
+  The file-to-publication correspondence is set by hand and exists only for the
+  part the earlier pipeline read
 - English translations of the principal works
 - A paper describing the method
 

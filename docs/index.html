@@ -223,6 +223,7 @@ const T = {
   ftLoading: 'loading the index…',
   ftReady: n => `${n} files carry transcriptions; the rest are catalogue only`,
   ftHits: (f, w) => `${f} files match, ${w} word forms`,
+  ftCommon: w => `“${w}” occurs in most of the fond and is not indexed`,
   more: n => `Show ${n} more`,
   legend: 'The bar under Type gives the share of handwritten sheets in a file: '
         + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> autograph, '
@@ -272,6 +273,7 @@ const T = {
   ftLoading: 'загружаю указатель…',
   ftReady: n => `расшифровано ${n} дел, остальные только по каталогу`,
   ftHits: (f, w) => `совпало дел: ${f}, словоформ: ${w}`,
+  ftCommon: w => `«${w}» встречается почти во всём фонде и не индексируется`,
   more: n => `Показать ещё ${n}`,
   legend: 'Полоса в столбце «Тип» показывает долю рукописных листов в деле: '
         + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> автограф, '
@@ -327,27 +329,51 @@ function enDate(raw) {
   return t.replace(/\s+/g, ' ').replace(/\[\s+/g, '[').replace(/\s+\]/g, ']').trim();
 }
 
-/* Full-text search. The index is fetched only when asked for: it is half a
-   megabyte over the wire, and most visits never need it. Russian is matched by
-   prefix rather than stemmed — "ракет" finds ракета, ракетахъ, ракетоплан —
-   because a stemmer needs a dictionary this page cannot carry, and showing too
-   much beats finding nothing. */
+/* Full-text search. The index is fetched only when asked for, and then only in
+   the part a query actually needs: whole, it is 3.7 MB over the wire, which is
+   too much to spend before the first word is found. It ships split by initial
+   letter — median 8 KB a piece — and the pieces are cached as they are asked
+   for. Russian is matched by prefix rather than stemmed — "ракет" finds
+   ракета, ракетахъ, ракетоплан — because a stemmer needs a dictionary this
+   page cannot carry, and showing too much beats finding nothing. */
 let FT = null, ftState = 'off';
+const FTP = {};                          // initial letter -> its piece, once fetched
 
 async function loadIndex() {
   if (FT || ftState === 'loading') return;
   ftState = 'loading';
   el('ftnote').textContent = t().ftLoading;
   try {
-    FT = await (await fetch('fulltext.json')).json();
-    FT.keys = Object.keys(FT.index);      // already sorted by the builder
+    FT = await (await fetch('ft/meta.json')).json();
     ftState = 'on';
   } catch (e) {
     ftState = 'off';
     el('ft').checked = false;
   }
   el('ftnote').textContent = '';
+  await ensureShards(el('q').value.trim().toLowerCase());
   apply();
+}
+
+const terms = q => q.split(/\s+/).filter(x => x.length >= 3)
+                    .map(x => x.replace(/ё/g, 'е'));
+
+/* Fetch the pieces this query needs and nothing else. A piece that fails to
+   load is cached empty rather than retried on every keystroke. */
+async function ensureShards(q) {
+  if (!FT) return;
+  const need = [...new Set(terms(q).map(x => x[0]))]
+                 .filter(c => FT.shards[c] !== undefined && !FTP[c]);
+  if (!need.length) return;
+  el('ftnote').textContent = t().ftLoading;
+  await Promise.all(need.map(async c => {
+    try {
+      const d = await (await fetch(`ft/${FT.shards[c]}.json`)).json();
+      FTP[c] = {index: d, keys: Object.keys(d)};   // already sorted by the builder
+    } catch (e) {
+      FTP[c] = {index: {}, keys: []};
+    }
+  }));
 }
 
 // First key at or after the prefix; the keys are sorted, so the matching
@@ -363,21 +389,25 @@ function lowerBound(keys, p) {
 
 function ftMatch(q) {
   if (!FT) return null;
-  const terms = q.split(/\s+/).filter(x => x.length >= 3)
-                 .map(x => x.replace(/ё/g, 'е'));
-  if (!terms.length) return null;
+  const ts = terms(q);
+  if (!ts.length) return null;
+  // A word dropped from the index as too common would otherwise look like a
+  // word that occurs nowhere, which is the opposite of the truth.
+  const common = ts.filter(x => FT.skipped.includes(x));
   let acc = null, forms = 0;
-  for (const term of terms) {
+  for (const term of ts) {
+    const part = FTP[term[0]];
+    if (!part) return null;              // its piece is still on the way
     const hit = new Set();
-    for (let i = lowerBound(FT.keys, term); i < FT.keys.length; i++) {
-      if (!FT.keys[i].startsWith(term)) break;
+    for (let i = lowerBound(part.keys, term); i < part.keys.length; i++) {
+      if (!part.keys[i].startsWith(term)) break;
       forms++;
-      for (const id of FT.index[FT.keys[i]]) hit.add(id);
+      for (const id of part.index[part.keys[i]]) hit.add(id);
     }
     acc = acc === null ? hit : new Set([...acc].filter(x => hit.has(x)));
     if (!acc.size) break;
   }
-  return {files: new Set([...acc].map(i => FT.files[i])), forms};
+  return {files: new Set([...acc].map(i => FT.files[i])), forms, common};
 }
 
 const t = () => T[LANG];
@@ -635,7 +665,8 @@ function paint() {
 function apply() {
   const q = el('q').value.trim().toLowerCase();
   const ft = (ftState === 'on' && q) ? ftMatch(q) : null;
-  if (ft) el('ftnote').textContent = t().ftHits(ft.files.size, ft.forms);
+  if (ft) el('ftnote').textContent = ft.common.length
+      ? t().ftCommon(ft.common.join(', ')) : t().ftHits(ft.files.size, ft.forms);
   else if (ftState === 'on') el('ftnote').textContent = t().ftReady(FT.files.length);
   const o = el('opis').value, dc = el('decade').value, only = el('only').value;
   view = DATA.rows.filter(r => {
@@ -696,7 +727,10 @@ function row(r) {
   </tr>`;
 }
 
-['q', 'opis', 'decade', 'only'].forEach(id => el(id).addEventListener('input', apply));
+['q', 'opis', 'decade', 'only'].forEach(id => el(id).addEventListener('input', async () => {
+  if (ftState === 'on') await ensureShards(el('q').value.trim().toLowerCase());
+  apply();
+}));
 el('ft').addEventListener('change', e => {
   if (e.target.checked) { ftState = FT ? 'on' : 'off'; loadIndex(); }
   else { ftState = 'off'; el('ftnote').textContent = ''; apply(); }
