@@ -33,7 +33,7 @@ This repository closes the first of those gaps.
 | `title_en.csv` | **English translations of all 2,019 file descriptions**, beside the Russian original, which stays the citable record |
 | `priority.csv` | The rocketry core of the fond, selected by title: 97 files, 4,046 sheets |
 | `priority_bolide.csv` | The 1934 bolide correspondence: 221 files, 970 sheets |
-| `corpus/` | **Transcriptions**, one file per archival file. 2,018 files of 2,019, 50,962 scans — the whole fond. See [`corpus/README.md`](corpus/README.md) |
+| `corpus/` | **Transcriptions**, one file per archival file. All 2,019 files, all 51,008 scans — the whole fond. See [`corpus/README.md`](corpus/README.md) |
 | `reading_calibration.csv` | 294 manuscript/typescript pairs of one text, with the agreement of the two readings — the noise floor for any textual comparison |
 | `gemini_hand_measurement.csv` | What each candidate model scores on handwriting, against the typed copy of the same text, with the pipeline as the baseline on the same sheets |
 | Pipeline | Retrieval, page classification, transcription and scoring — the code that produced the above and can reproduce it |

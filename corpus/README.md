@@ -5,15 +5,17 @@ now transcribed whole.
 
 ## What is here
 
-See the file list in this directory: **2,018 archival files of 2,019, 50,962
+See the file list in this directory: **all 2,019 archival files, all 51,008
 scans**, across all five inventories — the whole fond, including both variants
 of "The Spaceship" (files 46 and 47), "Exploration of Celestial Space by Means
 of Reaction Devices" (34) and "The Reaction Device — the Rocket" (35).
 
-One file is missing: two scans of opis 4, file 340 are refused by every model
-tried, which stops the file from being assembled. The refusal is a filter
-against reproducing known text verbatim, and it is recorded here rather than
-worked around.
+Two sheets of opis 4, file 340 were refused by every model with
+finishReason=RECITATION, the filter against reproducing known text verbatim.
+They are not manuscript at all: they are a German typewritten review of
+Tsiolkovsky's 1927 Kaluga pamphlet, printed text the models recognise. Those
+two sheets were read in strips and off the scan directly, and each says so in
+its own text.
 
 Every file here is transcribed **in full**. Partially transcribed files are
 not published: a partial transcription reads as a complete text with the
@@ -42,7 +44,7 @@ and ѳ. Nothing is silently modernised.
 This is a **machine transcription with uncertainty marked**, not a scholarly
 edition. It has not been checked by a human against the scans.
 
-Across these 50,962 scans there are **309,900 uncertainty marks** — about six
+Across these 51,008 scans there are **310,166 uncertainty marks** — about six
 per scan. That is the point of the method rather than a defect of it: a
 transcription whose doubtful places are visible can be checked and corrected
 where it matters, while one that reads smoothly because uncertain words were
