@@ -36,13 +36,22 @@ def load(path):
 
 
 def corpus():
+    """Счёт по листам, без шапки дела.
+
+    В шапке каждого файла стоит легенда разметки, и примеры в ней — `[?]`,
+    `[неразборчиво]`, `~~зачёркнуто~~` — счётчик принимал за настоящие пометки.
+    Это ровно по одному лишнему зачёркиванию и по два лишних знака сомнения на
+    дело: 2 019 и 4 038 на весь фонд. Отсюда опубликованные 303 977 вместо
+    299 939.
+    """
     files = sheets = marks = struck = 0
     for p in glob.glob(os.path.join(ROOT, "data", "transcripts", "*", "*.md")):
         t = open(p, encoding="utf-8").read()
         files += 1
         sheets += len(re.findall(r"^## Лист ", t, re.M))
-        marks += t.count("[?]") + len(re.findall(r"\[неразборчиво", t))
-        struck += len(re.findall(r"~~.+?~~", t))
+        body = t.split("## Лист", 1)[1] if "## Лист" in t else ""
+        marks += body.count("[?]") + len(re.findall(r"\[неразборчиво", body))
+        struck += len(re.findall(r"~~.+?~~", body))
     return files, sheets, marks, struck
 
 
@@ -84,18 +93,67 @@ def main():
         ("deletions", f"{cd:,} passages struck out"),
     ]
     if cal:
-        agree = st.median(float(r["ratio"]) for r in cal)
-        run = st.median(int(r["longest_run"]) for r in cal)
-        short = sum(1 for r in cal if int(r["longest_run"]) < 10) / len(cal)
+        # Как и корпусные числа, калибровочные сверяются со снимком: при
+        # подаче замер шёл по одной описи, потому что остальное ещё не было
+        # прочитано. Расширение на весь фонд — это рост данных, а не ошибка
+        # в статье, и путать одно с другим нельзя.
+        snap_cal = snap.get("calibration", {})
+        live = dict(pairs=len(cal),
+                    files=len({(r.get("opis", ""), r["delo"]) for r in cal})
+                          or len({r["delo"] for r in cal}),
+                    median_agreement=st.median(float(r["ratio"]) for r in cal),
+                    median_longest_run=st.median(int(r["longest_run"]) for r in cal),
+                    short_runs=sum(1 for r in cal
+                                   if int(r["longest_run"]) < 10) / len(cal))
+        g = lambda k: snap_cal.get(k, live[k])
         checks += [
-            ("calibration pairs", f"{len(cal)} such pairs"),
-            ("calibration files", f"{len(cal)} pairs from {len({r['delo'] for r in cal})} files"),
-            ("median agreement", f"median {agree*100:.0f}%"),
-            ("median longest run", f"median of {run:.0f} words"),
-            ("short runs", f"on {short*100:.0f}% of pairs"),
+            ("calibration pairs", f"{g('pairs')} such pairs"),
+            ("calibration files", f"{g('pairs')} pairs from {g('files')} files"),
+            ("median agreement", f"median {g('median_agreement')*100:.0f}%"),
+            ("median longest run", f"median of {g('median_longest_run'):.0f} words"),
+            ("short runs", f"on {g('short_runs')*100:.0f}% of pairs"),
         ]
+        if snap_cal and snap_cal.get("pairs") != live["pairs"]:
+            drift = (f"калибровка расширена: было {snap_cal['pairs']} пар из "
+                     f"{snap_cal['files']} дел, стало {live['pairs']} из "
+                     f"{live['files']}; медиана согласия "
+                     f"{live['median_agreement']*100:.0f}%")
+        else:
+            drift = None
     if val:
         checks += [("validation pairs", f"Over {len(val)} such pairs")]
+        # Ранговые связи: раньше не сверялись вовсе, и подвыборочные числа
+        # (0.92 на 32 парах, 0.97 на 17) нельзя было проверить запуском. На
+        # этом их легко спутать со связью по всем парам, что и случилось
+        # 14 августа: 0.67 приняли за расхождение со статьёй.
+        def rank(v):
+            order = sorted(range(len(v)), key=lambda i: v[i])
+            out = [0] * len(v)
+            for pos, i in enumerate(order):
+                out[i] = pos
+            return out
+
+        def rho_of(sub):
+            if len(sub) < 3:
+                return None
+            a = rank([float(r["agree"]) for r in sub])
+            b = rank([float(r["acc_hand"]) for r in sub])
+            n = len(sub)
+            d2 = sum((a[i] - b[i]) ** 2 for i in range(n))
+            return 1 - 6 * d2 / (n * (n * n - 1))
+
+        allp = rho_of(val)
+        w85 = [r for r in val if float(r["acc_typed"]) >= 0.85]
+        w90 = [r for r in val if float(r["acc_typed"]) >= 0.90]
+        if allp is not None:
+            checks.append(("rank correlation, all pairs",
+                           f"{allp:.2f} over all {len(val)} pairs"))
+        if rho_of(w85) is not None:
+            checks.append(("rank correlation, faithful witness",
+                           f"{rho_of(w85):.2f} over {len(w85)}"))
+        if rho_of(w90) is not None:
+            checks.append(("rank correlation, closest witness",
+                           f"{rho_of(w90):.2f} over the {len(w90)} pairs"))
     if ab:
         win = sum(1 for r in ab
                   if float(r["agree_strong"]) > float(r["agree_cheap"]))
@@ -140,6 +198,9 @@ def main():
         print(f"  разобраться нужно вручную, скрипт этого не различает.")
     else:
         print(f"  все {len(checks)} величин совпадают с данными")
+    if locals().get("drift"):
+        print(f"\n  {drift}")
+        print(f"  это тоже не расхождение: замер стал шире, а не другим.")
     if snap and files != cf:
         print(f"\n  корпус вырос с публикации: было {cf} дел и {cs:,} листов, "
               f"стало {files} и {sheets:,}.")

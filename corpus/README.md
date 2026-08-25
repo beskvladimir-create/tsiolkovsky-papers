@@ -44,13 +44,16 @@ and ѳ. Nothing is silently modernised.
 This is a **machine transcription with uncertainty marked**, not a scholarly
 edition. It has not been checked by a human against the scans.
 
-Across these 51,008 scans there are **303,977 uncertainty marks** — about six
+Across these 51,008 scans there are **299,939 uncertainty marks** — about six
 per scan.
 
 On 236 sheets the model looped and repeated one line of markup dozens or
 hundreds of times, 635 times at worst. What repeats is markup rather than text,
 so nothing is invented, but each repeat counted as a mark of uncertainty:
-6,189 of them did, which is why an earlier release said 310,166. The runs are
+6,189 of them did, which is why an earlier release said 310,166. A second
+miscount followed: the legend at the head of each file gives the notation by
+example, and those examples were counted as real marks — one struck passage and
+two doubts per file. Hence 303,977 in the release before this one. The runs are
 folded now, and each folded run carries a note in the sheet saying so. That is the point of the method rather than a defect of it: a
 transcription whose doubtful places are visible can be checked and corrected
 where it matters, while one that reads smoothly because uncertain words were
