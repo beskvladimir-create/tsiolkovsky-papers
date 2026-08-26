@@ -1,15 +1,28 @@
 {
  "arxiv": "2608.03617",
+ "version": "v2",
  "submitted": "2026-08-04",
- "note": "Figures as printed in arXiv:2608.03617 v1. The corpus has grown since; see section 8 of the paper. These must not be edited to match live data: the repository copy has to remain the paper that was submitted.",
- "corpus_files": 322,
- "corpus_sheets": 5454,
- "uncertainty_marks": 35961,
- "deletions": 4022,
- "live_at_snapshot": {
-  "files": 340,
-  "sheets": 6941,
-  "marks": 42904,
-  "deletions": 4816
+ "updated": "2026-08-25",
+ "note": "Figures as printed in arXiv:2608.03617 v2, where the fond is transcribed whole. v1 described a growing corpus of 322 files; those figures are kept below for reference. The repository copy must remain the paper that is on arXiv.",
+ "corpus_files": 2019,
+ "corpus_sheets": 51008,
+ "uncertainty_marks": 299939,
+ "deletions": 36446,
+ "calibration": {
+  "pairs": 1759,
+  "files": 224,
+  "median_agreement": 0.366,
+  "median_longest_run": 10,
+  "short_runs": 0.43
+ },
+ "v1_for_reference": {
+  "corpus_files": 322,
+  "corpus_sheets": 5454,
+  "uncertainty_marks": 35961,
+  "deletions": 4022,
+  "calibration_pairs": 294,
+  "calibration_files": 27,
+  "median_longest_run": 12,
+  "short_runs": 0.31
  }
 }

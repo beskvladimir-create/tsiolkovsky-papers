@@ -47,6 +47,9 @@ PREAMBLE = r"""\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[english,russian]{babel}
 \selectlanguage{english}
+%% babel's main language here is russian (needed for T2A), which would otherwise
+%% rename the abstract heading.
+\addto\captionsrussian{\renewcommand{\abstractname}{Abstract}}
 
 \usepackage[margin=2.6cm]{geometry}
 \usepackage{booktabs}
@@ -86,6 +89,23 @@ def convert():
         input=md, text=True, capture_output=True)
     if p.returncode != 0:
         raise SystemExit(f"pandoc failed:\n{p.stderr}")
+
+    # pandoc оборачивает таблицу без подписи в группу с \def\LTcaptype{none},
+    # чтобы она не увеличивала счётчик таблиц. Счётчика с именем none не
+    # существует: TeX Live 2025 роняет сборку на каждой такой обёртке, и arXiv
+    # отвергает submission, хотя PDF при этом получается. Подписей у наших
+    # таблиц нет, так что обёртка не нужна. Снимаем построчно и обе половины
+    # сразу, иначе останутся непарные скобки.
+    lines, out, drop_next_brace = p.stdout.split("\n"), [], False
+    for line in lines:
+        if line.lstrip().startswith("{\\def\\LTcaptype"):
+            drop_next_brace = True
+            continue
+        if drop_next_brace and line.strip() == "}":
+            drop_next_brace = False
+            continue
+        out.append(line)
+    p = type(p)(p.args, p.returncode, "\n".join(out), p.stderr)
     body = p.stdout
     # The abstract is a section in markdown and an environment in LaTeX.
     body = re.sub(r"\\section\{Abstract\}[^\n]*\n(.*?)(?=\\section\{)",

@@ -88,7 +88,7 @@ def main():
         ("handwritten", f"{cls['hand']:,}"),
         ("typewritten", f"{cls['typed']:,}"),
         ("notes", f"{cls['note']:,}"),
-        ("corpus (as submitted)", f"{cf} files and {cs:,} scans"),
+        ("corpus (as submitted)", f"{cf:,} files and {cs:,} scans"),
         ("uncertainty marks", f"{cm:,} uncertainty marks"),
         ("deletions", f"{cd:,} passages struck out"),
     ]
@@ -107,8 +107,8 @@ def main():
                                    if int(r["longest_run"]) < 10) / len(cal))
         g = lambda k: snap_cal.get(k, live[k])
         checks += [
-            ("calibration pairs", f"{g('pairs')} such pairs"),
-            ("calibration files", f"{g('pairs')} pairs from {g('files')} files"),
+            ("calibration pairs", f"{g('pairs'):,} such pairs"),
+            ("calibration files", f"{g('pairs'):,} pairs from {g('files')} files"),
             ("median agreement", f"median {g('median_agreement')*100:.0f}%"),
             ("median longest run", f"median of {g('median_longest_run'):.0f} words"),
             ("short runs", f"on {g('short_runs')*100:.0f}% of pairs"),
