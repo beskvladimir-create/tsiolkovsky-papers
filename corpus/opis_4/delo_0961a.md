@@ -1,16 +1,18 @@
-# Фонд 555, опись 4, дело 961a
+# Fond 555, opis 4, delo 961a
 
-**Название:** Письмо Воробьева Бориса Никитича к Ассонову Владимиру Васильевичу
-**Вид материала:** письмо
-**Способ воспроизведения:** автограф
-**Сканов:** 5
-**Источник:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1982
+**Title (as catalogued):** Письмо Воробьева Бориса Никитича к Ассонову Владимиру Васильевичу
+**Title (English):** Letter of Boris Nikitich Vorobyov to Vladimir Vasilievich Assonov
+**Material:** письмо
+**Reproduction:** автограф
+**Scans:** 5
+**Source:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1982
 
-> Машинная транскрипция по `TRANSCRIPTION_SPEC.md`. Экспертная выверка
-> не проводилась. Пометки: `[?]` неуверенное чтение, `[неразборчиво]`
-> нечитаемое, `~~зачёркнуто~~` правка автора, `[вставка: ...]`,
-> `[на полях: ...]`, `[другой почерк: ...]`. Орфография оригинала
-> сохранена, включая дореформенные буквы.
+> Machine transcription per `TRANSCRIPTION_SPEC.md`; no expert check has
+> been made against the scans. Markup: `[?]` uncertain reading,
+> `[неразборчиво]` illegible, `~~struck~~` deleted by the author,
+> `[вставка: ...]` insertion, `[на полях: ...]` marginal note,
+> `[другой почерк: ...]` a different hand. Original orthography is kept,
+> including pre-reform letters.
 
 ---
 

@@ -1,16 +1,18 @@
-# Фонд 555, опись 4, дело 873a
+# Fond 555, opis 4, delo 873a
 
-**Название:** Письма школьника Ника Панкова к К.Э. Циолковскому в ответ на его заметку "Кто видел Болид?»
-**Вид материала:** письма
-**Способ воспроизведения:** автограф
-**Сканов:** 12
-**Источник:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1889
+**Title (as catalogued):** Письма школьника Ника Панкова к К.Э. Циолковскому в ответ на его заметку "Кто видел Болид?»
+**Title (English):** Letters of the schoolboy Nik Pankov to K. E. Tsiolkovsky in reply to his note "Who Saw the Bolide?"
+**Material:** письма
+**Reproduction:** автограф
+**Scans:** 12
+**Source:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1889
 
-> Машинная транскрипция по `TRANSCRIPTION_SPEC.md`. Экспертная выверка
-> не проводилась. Пометки: `[?]` неуверенное чтение, `[неразборчиво]`
-> нечитаемое, `~~зачёркнуто~~` правка автора, `[вставка: ...]`,
-> `[на полях: ...]`, `[другой почерк: ...]`. Орфография оригинала
-> сохранена, включая дореформенные буквы.
+> Machine transcription per `TRANSCRIPTION_SPEC.md`; no expert check has
+> been made against the scans. Markup: `[?]` uncertain reading,
+> `[неразборчиво]` illegible, `~~struck~~` deleted by the author,
+> `[вставка: ...]` insertion, `[на полях: ...]` marginal note,
+> `[другой почерк: ...]` a different hand. Original orthography is kept,
+> including pre-reform letters.
 
 ---
 

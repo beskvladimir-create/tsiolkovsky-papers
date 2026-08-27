@@ -1,16 +1,18 @@
-# Фонд 555, опись 4, дело 805a
+# Fond 555, opis 4, delo 805a
 
-**Название:** Письмо помощника инженера Николая Николаевича Еленина к К.Э. Циолковскому в ответ на его заметку "Кто видел Болид?»
-**Вид материала:** письмо
-**Способ воспроизведения:** автограф
-**Сканов:** 6
-**Источник:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1817
+**Title (as catalogued):** Письмо помощника инженера Николая Николаевича Еленина к К.Э. Циолковскому в ответ на его заметку "Кто видел Болид?»
+**Title (English):** Letter of the assistant engineer Nikolai Nikolaevich Elenin to K. E. Tsiolkovsky in reply to his note "Who Saw the Bolide?"
+**Material:** письмо
+**Reproduction:** автограф
+**Scans:** 6
+**Source:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1817
 
-> Машинная транскрипция по `TRANSCRIPTION_SPEC.md`. Экспертная выверка
-> не проводилась. Пометки: `[?]` неуверенное чтение, `[неразборчиво]`
-> нечитаемое, `~~зачёркнуто~~` правка автора, `[вставка: ...]`,
-> `[на полях: ...]`, `[другой почерк: ...]`. Орфография оригинала
-> сохранена, включая дореформенные буквы.
+> Machine transcription per `TRANSCRIPTION_SPEC.md`; no expert check has
+> been made against the scans. Markup: `[?]` uncertain reading,
+> `[неразборчиво]` illegible, `~~struck~~` deleted by the author,
+> `[вставка: ...]` insertion, `[на полях: ...]` marginal note,
+> `[другой почерк: ...]` a different hand. Original orthography is kept,
+> including pre-reform letters.
 
 ---
 

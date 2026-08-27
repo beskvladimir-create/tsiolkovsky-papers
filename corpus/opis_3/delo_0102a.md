@@ -1,16 +1,18 @@
-# Фонд 555, опись 3, дело 102a
+# Fond 555, opis 3, delo 102a
 
-**Название:** Письма К.Э. Циолковского в Секцию межпланетных сообщений Военно-научного общества Академии воздушного флота о работе Общества и издании книг К.Э. Циолковского
-**Вид материала:** письма
-**Способ воспроизведения:** автограф
-**Сканов:** 17
-**Источник:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=907
+**Title (as catalogued):** Письма К.Э. Циолковского в Секцию межпланетных сообщений Военно-научного общества Академии воздушного флота о работе Общества и издании книг К.Э. Циолковского
+**Title (English):** Letters from K. E. Tsiolkovsky to the Section on Interplanetary Communications of the Military-Scientific Society of the Air Fleet Academy on the work of the Society and the publication of K. E. Tsiolkovsky's books
+**Material:** письма
+**Reproduction:** автограф
+**Scans:** 17
+**Source:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=907
 
-> Машинная транскрипция по `TRANSCRIPTION_SPEC.md`. Экспертная выверка
-> не проводилась. Пометки: `[?]` неуверенное чтение, `[неразборчиво]`
-> нечитаемое, `~~зачёркнуто~~` правка автора, `[вставка: ...]`,
-> `[на полях: ...]`, `[другой почерк: ...]`. Орфография оригинала
-> сохранена, включая дореформенные буквы.
+> Machine transcription per `TRANSCRIPTION_SPEC.md`; no expert check has
+> been made against the scans. Markup: `[?]` uncertain reading,
+> `[неразборчиво]` illegible, `~~struck~~` deleted by the author,
+> `[вставка: ...]` insertion, `[на полях: ...]` marginal note,
+> `[другой почерк: ...]` a different hand. Original orthography is kept,
+> including pre-reform letters.
 
 ---
 

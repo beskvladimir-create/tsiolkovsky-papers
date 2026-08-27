@@ -75,28 +75,51 @@ def scan_state(cat):
     return state
 
 
+def titles_en():
+    """Английские названия дел: они переведены отдельно (title_en.csv) и здесь
+    ставятся рядом с русским, а не вместо него. Русское название — цитируемая
+    запись архива, и ссылка резолвится по нему."""
+    out = {}
+    p = os.path.join(ROOT, "title_en.csv")
+    if os.path.exists(p):
+        for r in csv.DictReader(open(p, encoding="utf-8")):
+            out[r["portal_id"]] = r["title_en"]
+    return out
+
+
+EN = titles_en()
+
+
 def build(num, row, txts, dd):
     f = split_fields(row.get("name", ""))
+    # Служебные поля по-английски: корпус лежит на международных площадках, и
+    # читатель, открывший файл, должен понимать хотя бы что перед ним. Значения
+    # остаются как в описи, по-русски: это цитируемая архивная запись.
+    en = EN.get(row.get("portal_id", ""))
     head = [
-        f"# Фонд 555, {row['opis'].lower()}, дело {num.lstrip('0')}",
+        f"# Fond 555, opis {row['opis'].lower().replace('опись', '').strip()}, "
+        f"delo {num.lstrip('0')}",
         "",
-        f"**Название:** {f['title']}",
+        f"**Title (as catalogued):** {f['title']}",
     ]
+    if en:
+        head.append(f"**Title (English):** {en}")
     if f["material"]:
-        head.append(f"**Вид материала:** {f['material']}")
+        head.append(f"**Material:** {f['material']}")
     if f["repro"]:
-        head.append(f"**Способ воспроизведения:** {f['repro']}")
+        head.append(f"**Reproduction:** {f['repro']}")
     if f["dates"]:
-        head.append(f"**Крайние даты:** {f['dates']}")
+        head.append(f"**Dates:** {f['dates']}")
     head += [
-        f"**Сканов:** {len(txts)}",
-        f"**Источник:** {BASE}/1_actview.aspx?id={row['portal_id']}",
+        f"**Scans:** {len(txts)}",
+        f"**Source:** {BASE}/1_actview.aspx?id={row['portal_id']}",
         "",
-        "> Машинная транскрипция по `TRANSCRIPTION_SPEC.md`. Экспертная выверка",
-        "> не проводилась. Пометки: `[?]` неуверенное чтение, `[неразборчиво]`",
-        "> нечитаемое, `~~зачёркнуто~~` правка автора, `[вставка: ...]`,",
-        "> `[на полях: ...]`, `[другой почерк: ...]`. Орфография оригинала",
-        "> сохранена, включая дореформенные буквы.",
+        "> Machine transcription per `TRANSCRIPTION_SPEC.md`; no expert check has",
+        "> been made against the scans. Markup: `[?]` uncertain reading,",
+        "> `[неразборчиво]` illegible, `~~struck~~` deleted by the author,",
+        "> `[вставка: ...]` insertion, `[на полях: ...]` marginal note,",
+        "> `[другой почерк: ...]` a different hand. Original orthography is kept,",
+        "> including pre-reform letters.",
         "",
         "---",
     ]

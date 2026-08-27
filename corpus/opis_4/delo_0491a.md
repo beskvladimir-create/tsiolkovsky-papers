@@ -1,16 +1,18 @@
-# Фонд 555, опись 4, дело 491a
+# Fond 555, opis 4, delo 491a
 
-**Название:** Письмо библиографа Полосатовой Евгении Владимировны к К.Э. Циолковскому
-**Вид материала:** письмо
-**Способ воспроизведения:** автограф
-**Сканов:** 3
-**Источник:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1505
+**Title (as catalogued):** Письмо библиографа Полосатовой Евгении Владимировны к К.Э. Циолковскому
+**Title (English):** Letter of the bibliographer Evgenia Vladimirovna Polosatova to K. E. Tsiolkovsky
+**Material:** письмо
+**Reproduction:** автограф
+**Scans:** 3
+**Source:** https://www.ras.ru/ktsiolkovskyarchive/1_actview.aspx?id=1505
 
-> Машинная транскрипция по `TRANSCRIPTION_SPEC.md`. Экспертная выверка
-> не проводилась. Пометки: `[?]` неуверенное чтение, `[неразборчиво]`
-> нечитаемое, `~~зачёркнуто~~` правка автора, `[вставка: ...]`,
-> `[на полях: ...]`, `[другой почерк: ...]`. Орфография оригинала
-> сохранена, включая дореформенные буквы.
+> Machine transcription per `TRANSCRIPTION_SPEC.md`; no expert check has
+> been made against the scans. Markup: `[?]` uncertain reading,
+> `[неразборчиво]` illegible, `~~struck~~` deleted by the author,
+> `[вставка: ...]` insertion, `[на полях: ...]` marginal note,
+> `[другой почерк: ...]` a different hand. Original orthography is kept,
+> including pre-reform letters.
 
 ---
 
