@@ -35,7 +35,7 @@ from collections import Counter
 
 def read_sheets(path):
     s = open(path, encoding="utf-8").read()
-    parts = re.split(r"^## Лист (\S+)\s*$", s, flags=re.M)
+    parts = re.split(r"^## (?:Лист|Sheet) (\S+)\s*$", s, flags=re.M)
     return {parts[i]: parts[i + 1].strip() for i in range(1, len(parts) - 1, 2)}
 
 

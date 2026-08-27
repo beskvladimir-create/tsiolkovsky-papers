@@ -48,8 +48,9 @@ def corpus():
     for p in glob.glob(os.path.join(ROOT, "data", "transcripts", "*", "*.md")):
         t = open(p, encoding="utf-8").read()
         files += 1
-        sheets += len(re.findall(r"^## Лист ", t, re.M))
-        body = t.split("## Лист", 1)[1] if "## Лист" in t else ""
+        sheets += len(re.findall(r"^## (?:Лист|Sheet) ", t, re.M))
+        m = re.search(r"^## (?:Лист|Sheet) ", t, re.M)
+        body = t[m.start():] if m else ""
         marks += body.count("[?]") + len(re.findall(r"\[неразборчиво", body))
         struck += len(re.findall(r"~~.+?~~", body))
     return files, sheets, marks, struck

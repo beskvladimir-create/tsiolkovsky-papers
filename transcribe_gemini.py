@@ -172,7 +172,7 @@ def main():
         tin += i
         tout += o
         print(f"  {p}: {o:>5} вых. токенов" + ("" if text else "  ПРОВАЛ"), flush=True)
-        chunks.append(f"## Лист {p}\n\n{text or '[не получено]'}\n")
+        chunks.append(f"## Sheet {p}\n\n{text or '[не получено]'}\n")
         time.sleep(args.delay)
 
     header = (f"# {os.path.basename(args.delo)} — транскрипция {args.model}\n\n"

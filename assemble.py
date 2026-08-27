@@ -126,7 +126,7 @@ def build(num, row, txts, dd):
     body = []
     for t in txts:
         text = open(os.path.join(dd, t), encoding="utf-8").read().strip()
-        body.append(f"## Лист {t.replace('.txt','')}\n\n{text or '[пустой лист]'}\n")
+        body.append(f"## Sheet {t.replace('.txt','')}\n\n{text or '[пустой лист]'}\n")
     return "\n".join(head) + "\n\n" + "\n---\n\n".join(body)
 
 

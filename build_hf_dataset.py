@@ -27,7 +27,9 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "hf")
 BASE = "https://www.ras.ru/ktsiolkovskyarchive"
 
-SHEET = re.compile(r"^## Лист (\S+)\s*$", re.M)
+# «Лист» до 26 августа, «Sheet» после: старые копии корпуса и прежние
+# релизы на Zenodo должны читаться этим же кодом.
+SHEET = re.compile(r"^## (?:Лист|Sheet) (\S+)\s*$", re.M)
 MARK = re.compile(r"\[неразборчиво")
 
 

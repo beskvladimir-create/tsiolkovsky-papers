@@ -114,7 +114,7 @@ def main():
 
     ours = open(args.transcript, encoding="utf-8").read()
     if args.from_page:
-        m = re.search(rf"## Лист {args.from_page}(.*)$", ours, re.S)
+        m = re.search(rf"## (?:Лист|Sheet) {args.from_page}(.*)$", ours, re.S)
         if not m:
             raise SystemExit(f"no scan {args.from_page} in that file")
         ours = m.group(1)
