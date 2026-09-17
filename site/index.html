@@ -114,11 +114,58 @@ a.src:hover{border-bottom-color:var(--accent)}
 footer{border-top:1px solid var(--line);padding:34px 0 70px;color:var(--dim);font-size:13px}
 footer a{color:var(--dim)}
 footer p{max-width:78ch}
+/* Между телефоном и широким экраном таблица тоже не помещалась: шести
+   фиксированных колонок 658 точек: на 768 названию доставалось 62, на 901
+   всего 195. Здесь таблица остаётся таблицей, но без двух второстепенных
+   колонок. */
+@media (min-width:641px) and (max-width:1000px){
+  .hidesm{display:none}
+  /* colgroup здесь не годится: когда ячейки скрыты через display:none,
+     Chrome сопоставляет оставшиеся ячейки с <col> по порядку и ширины
+     съезжают, отчего колонка ссылок получала нулевую ширину и «сканы · текст»
+     переносился по буквам. Поэтому ширины задаются самим ячейкам, а колонку
+     названия считает браузер. */
+  table{table-layout:auto}
+  col{width:auto}
+  th,td{padding:12px 8px}
+  .num{width:1%;white-space:nowrap}
+  /* датам перенос разрешён: «18 May 1891 – 19 August 1932» в одну строку
+     забирал 289 точек и не оставлял места названию */
+  .dates{min-width:142px;white-space:normal}
+  /* overflow-wrap:anywhere обнуляет минимальную ширину названия, и при
+     авторазметке остаток уходил соседям: width:100% отдаёт его названию */
+  .ttl{width:100%}
+  tr td:last-child,thead th:last-child{width:1%;white-space:nowrap}
+}
+
 @media (max-width:640px){
   .hero{min-height:80vh} .stats{gap:22px} .hidesm{display:none}
-  col.c-opis{width:56px} col.c-file{width:60px} col.c-dates{width:120px}
-  col.c-links{width:96px}
+  .wrap{padding:0 16px}
   .chart{height:96px} .section{padding-top:52px}
+
+  /* Таблица на телефоне не помещается ни при каких ширинах колонок: семь
+     колонок на 360 точек оставляли названию 46 точек, и оно переносилось по
+     буквам. Вдобавок скрытые .hidesm ячейки продолжали резервировать ширину
+     через <col>, потому что table-layout:fixed считает по colgroup, а не по
+     ячейкам. Поэтому строка становится карточкой: название, под ним шифр и
+     даты, внизу ссылки. Подписи к шифру берутся из data-h, то есть из тех же
+     переведённых заголовков, и меняются вместе с языком. */
+  .tablewrap{overflow-x:visible}
+  table,tbody{display:block;table-layout:auto}
+  colgroup,thead{display:none}
+  tr{display:flex;flex-wrap:wrap;align-items:baseline;
+     padding:16px 0;border-bottom:1px solid var(--line)}
+  tr:hover td{background:none}
+  td{display:block;border:0;padding:0}
+  td:empty{display:none}
+  td.ttl{order:1;flex:1 0 100%;font-size:15px;line-height:1.45}
+  /* .hidesm прячет две колонки от узкой таблицы; в карточке место есть, и
+     полоса нужна: легенда над списком объясняет именно её */
+  td.hidesm{display:block}
+  td.num,td.dates,td.hidesm{order:2;font-size:12.5px;margin:9px 14px 0 0}
+  td[data-h]::before{content:attr(data-h) " ";opacity:.62}
+  tr td:last-child{order:3;flex:1 0 100%;margin-top:10px;font-size:13.5px}
+  .ttl .meta{display:block;margin-top:3px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -225,7 +272,7 @@ const T = {
   ftHits: (f, w) => `${f} files match, ${w} word forms`,
   ftCommon: w => `“${w}” occurs in most of the fond and is not indexed`,
   more: n => `Show ${n} more`,
-  legend: 'The bar under Type gives the share of handwritten sheets in a file: '
+  legend: 'The bar gives the share of handwritten sheets in a file: '
         + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> autograph, '
         + '<span class="bar" style="width:26px"><i style="width:0"></i></span> typescript. '
         + 'Dates in square brackets were assigned by the archivists from the contents, not '
@@ -277,7 +324,7 @@ const T = {
   ftHits: (f, w) => `совпало дел: ${f}, словоформ: ${w}`,
   ftCommon: w => `«${w}» встречается почти во всём фонде и не индексируется`,
   more: n => `Показать ещё ${n}`,
-  legend: 'Полоса в столбце «Тип» показывает долю рукописных листов в деле: '
+  legend: 'Полоса показывает долю рукописных листов в деле: '
         + '<span class="bar" style="width:26px"><i style="width:100%"></i></span> автограф, '
         + '<span class="bar" style="width:26px"><i style="width:0"></i></span> машинопись. '
         + 'Даты в квадратных скобках проставлены архивистами по содержанию, а не автором.',
@@ -721,11 +768,11 @@ function row(r) {
     ? `${esc(titleEn)}<br><span class="orig">${esc(title)}</span>`
     : esc(title);
   return `<tr>
-    <td class="num">${esc(opis)}</td>
-    <td class="num">${esc(delo)}</td>
+    <td class="num" data-h="${esc(s.head[0])}">${esc(opis)}</td>
+    <td class="num" data-h="${esc(s.head[1])}">${esc(delo)}</td>
     <td class="ttl">${head}${meta ? `<br><span class="meta">${esc(meta)}</span>` : ''}</td>
     <td class="dates">${d}</td>
-    <td class="num hidesm">${pages}</td>
+    <td class="num hidesm" data-h="${esc(s.head[4])}">${pages}</td>
     <td class="hidesm">${mix}</td>
     <td>${links.join(' · ')}</td>
   </tr>`;

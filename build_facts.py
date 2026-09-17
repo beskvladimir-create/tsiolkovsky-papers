@@ -48,6 +48,16 @@ hr { border: 0; border-top: 1px solid #ddd; margin: 26px 0; }
 blockquote { margin: 12px 0; padding-left: 14px; border-left: 3px solid #ccc;
              color: #444; }
 @media print { a { color: #000; text-decoration: none; } body { padding: 0; } }
+/* nowrap во второй колонке держит числа в строке, но на телефоне строки вроде
+   «1878–1935 (собственные работы)» растягивали таблицу до 559 точек, и уезжала
+   вся страница. На узком экране перенос разрешён. */
+@media (max-width: 640px) {
+  body { font-size: 15px; padding: 18px 16px 48px; }
+  td:nth-child(2) { white-space: normal; }
+  th, td { padding: 6px 8px; font-size: 13px; }
+  h1 { font-size: 22px; }
+  h2 { font-size: 17px; }
+}
 """
 
 
