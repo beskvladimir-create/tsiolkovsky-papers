@@ -7,28 +7,34 @@
 The personal archive of Konstantin Tsiolkovsky (1857–1935) is held as fond 555
 of the Archive of the Russian Academy of Sciences. The archive has scanned the
 fond and published the images, but with no queryable catalogue, no full-text
-search and no dataset: the holdings are reachable only by clicking through page
+search and no dataset: the holdings are reachable only by clicking through
+page
 views one file at a time. This paper describes a machine-readable catalogue of
-all 2,019 files and 51,008 scans of the fond, a dating for 1,969 of those files
+all 2,019 files and 51,008 scans of the fond, a dating for 1,969 of those
+files
 collected from the archive's own descriptions, a page-level classification of
 every scan into handwriting and typescript, and a machine transcription of
 the fond in full: all 2,019 files and all 51,008 scans.
 
 It also reports a way to measure the accuracy of handwritten text recognition
-in an archive that has no ground truth. Personal archives of the typewriter era
+in an archive that has no ground truth. Personal archives of the typewriter
+era
 frequently preserve one text twice, as the author's manuscript and as a typed
 copy made from it. Transcribing both and comparing the results isolates the
 reading error, because the source text and the recognition pipeline are
 identical and only the difficulty of the page differs. Across 1,759 such pairs
 from 224 files, two readings of one handwritten page agree on a
 median 37% of words and share a longest verbatim run of a median 10 words. The
-median is unchanged from the 294 pairs of the first version of this paper, on a
+median is unchanged from the 294 pairs of the first version of this paper, on
+a
 sample six times larger. On
 two files that also have a published edition, the estimate can be checked
 against ground truth: it is unbiased to within a percentage point and ranks
-pages as the truth does, at a rank correlation of 0.92 where the edition is a
-faithful witness to the archival copy. This has a direct consequence for what
-the corpus can be used for: the two variants of one work in this fond share 19% of their words, which
+pages as the truth does, at a rank correlation of 0.67 over all 55 pairs and
+0.92 over the 32 where the edition is a faithful witness to the archival copy.
+This has a direct consequence for what
+the corpus can be used for: the two variants of one work in this fond share
+19% of their words, which
 is below the rate at which two readings of a single page agree, so the
 redactions cannot be collated word by word at this recognition quality. That
 negative result is reported here as such, and the constraint is built into the
@@ -51,20 +57,95 @@ only be browsed.
 
 This paper describes a dataset that closes part of that gap, and a measurement
 that establishes what the dataset can honestly be used for. Both the resource
-and its limits are reported, including two lines of inquiry that were abandoned
-after measurement showed they could not be supported.
+and its limits are reported, including two lines of inquiry that were
+abandoned after measurement showed they could not be supported.
 
-## 2. The fond and its portal
+Before this, fond 555 could be looked at but not used. A historian now has all
+2,019 files with the archive's own numbers, dating for 1,969 of them, a
+classification of every one of the 51,008 scans, and the full text of all of
+them, searchable in a browser and downloadable as a dataset. The practical
+difference is that one can ask which files touch a subject and in which years,
+and arrive at the reading room with a list of files to order rather than a
+shelf to browse.
+
+For an archivist there is a second thing, and it is about the inventory
+itself. Scanning the completed corpus for shared runs of twelve words returns
+376 pairs of files with verbatim text in common, 353 of them filed under
+different titles, so the connection is invisible from the catalogue. Files 338
+and 339 of opis 1, about 29,000 words each, share two thirds of their text
+under two unrelated names.
+
+## 2. Related work
+
+### 2.1 Recognising handwriting in archival practice
+
+Handwritten text recognition has been brought to archival material chiefly
+through trained recognisers, and the Transkribus platform is the case most
+fully documented in the literature (Muehlberger et al. 2019; Nockels et al.
+2022). The two approaches differ in where the work is placed. A Transkribus
+deployment of the kind Muehlberger and colleagues describe trains a recogniser
+on pages of the same hand that a person has already transcribed, and it repays
+that investment with a model specialised to the hand and with a character
+error rate measured against held-out ground truth. The pipeline described here
+has no training stage: a general model reads each scan under a written
+specification, is required to mark every uncertain word rather than guess
+silently, and preserves the author's deletions instead of resolving them. The
+corpus carries 299,939 explicit uncertainty marks and 36,446 preserved
+deletions for that reason.
+
+Fond 555 suited the second approach because it had none of the preconditions
+for the first. No transcribed ground truth existed for this hand, and none was
+going to be produced. The fond is also heterogeneous in a way a single trained
+model is not built for: five inventories, autographs beside typed copies and
+archivists' notes, tables, formulae, pre-reform orthography, and in one file a
+German typescript. The goal was a finding aid over all 51,008 sheets rather
+than a critical edition of one work. What is given up is the usual
+measurement. With no held-out ground truth there is no character error rate in
+the conventional sense, which is precisely why the duplicate-based measurement
+of Section 7 exists. A model fine-tuned on this hand would be expected to read
+it better than any general model.
+
+### 2.2 What recognition quality costs an analysis
+
+The effect of recognition error on humanities analysis has been measured
+directly: Hill and Hengchen (2019) quantify what dirty OCR does to topic
+modelling, authorship attribution, collocation analysis and vector space
+models, and van Strien et al. (2020) assess its impact on a range of
+downstream natural language processing tasks. Hill and Hengchen measure what a
+given recognition quality does to an analysis; this paper measures, for one
+analysis, the recognition quality at which it stops being possible at all,
+which is the same curve read from the other end.
+
+### 2.3 Text reuse
+
+Detection of repeated text is an established field with mature tools and its
+own literature, in which n-gram shingling is standard and robustness to
+recognition noise has been studied (Smith, Cordell, and Dillon 2013; Büchler
+et al. 2014). A reprint is a published witness travelling between
+publications, and the question Smith and Cordell ask is propagation: who
+copied whom, how far it spread, at what scale. Both sides are print, so both
+are read at comparable quality, and the corpus is large enough that redundancy
+absorbs recognition noise.
+
+In a personal archive the repeat is the author reusing himself across his own
+drafts. The two witnesses are the same hand, sometimes an autograph against a
+typed copy, read at far lower and previously unknown quality. The pairing is
+not between publications but between catalogue entries that the inventory
+keeps apart, and the question is not propagation but the structure of the
+fond: which files are versions of one another, and which passages the author
+carried from one work into another.
+
+## 3. The fond and its portal
 
 Fond 555 is arranged in five inventories (*opisi*). The catalogue reports:
 
-| Inventory | Files | Scans |
-| --- | ---: | ---: |
-| Opis 1 | 568 | 27,954 |
-| Opis 1А | 24 | 2,283 |
-| Opis 2 | 212 | 6,579 |
-| Opis 3 | 198 | 2,881 |
-| Opis 4 | 1,017 | 11,311 |
+| Inventory |     Files |      Scans |
+|:----------|----------:|-----------:|
+| Opis 1    |       568 |     27,954 |
+| Opis 1А   |        24 |      2,283 |
+| Opis 2    |       212 |      6,579 |
+| Opis 3    |       198 |      2,881 |
+| Opis 4    |     1,017 |     11,311 |
 | **Total** | **2,019** | **51,008** |
 
 Opis 1 holds the author's own works. Opis 4 is correspondence almost without
@@ -74,7 +155,7 @@ inventory in the fond by file count.
 The archive describes the fond as 31,680 *sheets*, which is not the number of
 images: a sheet has a reverse and each side is scanned separately. Measured
 across the whole fond the ratio is 1.61 scans per sheet, consistent with the
-archival cover of file 33, which records "9½ sheets" against 16 scans.
+archival cover of file 33, which records “9½ sheets” against 16 scans.
 
 Building the catalogue was not a matter of reading the page addresses, because
 those addresses are misleading in a way that would corrupt every archival
@@ -84,34 +165,38 @@ The inventory number in a URL is decorative. `1_actview.aspx?id=834` and
 `5_actview.aspx?id=834` return the same document: the identifier is a single
 flat sequence across the entire fond, and the inventory in the address is
 ignored by the server. The real inventory and file number appear only inside
-the paths of the scan images, in the form `555\1_033`, meaning opis 1, file 33.
-Nor is the identifier the file number: identifier 300 is file 297, because 31
-files carry letter suffixes (145а, 077б, 585а) which consume an identifier
+the paths of the scan images, in the form `555\1_033`, meaning opis 1, file
+33. Nor is the identifier the file number: identifier 300 is file 297, because
+31 files carry letter suffixes (145а, 077б, 585а) which consume an identifier
 without advancing the count.
 
 A catalogue built on the obvious reading of the addresses would label every
 file as belonging to opis 1 and would cite the wrong file numbers throughout,
-making every row useless as an archival reference. The catalogue described here
-resolves each file from its scan paths, so that inventory and file number
+making every row useless as an archival reference. The catalogue described
+here resolves each file from its scan paths, so that inventory and file number
 together form a citable archival address.
 
-Two properties of the server shaped the retrieval code. It truncates responses
-at approximately 130 KB, so that small scans arrive whole while scans above
-roughly 800 KB fail with an incomplete read however many times they are
-retried; it does honour range requests, so large images are fetched in 100 KB
-chunks and reassembled. It also returns HTTP 500 on roughly a third of
-requests while serving the same URL correctly on the next attempt, so retry
-logic must distinguish a temporary failure from a genuine absence. All 51,008
-scans were retrieved and checked: every file is a structurally valid JPEG, none
-corrupt, and the directory tree matches the catalogue file for file.
+Two properties of the server shaped the retrieval code. It truncates large
+responses: scans up to about 175 KB arrive whole, while scans above roughly
+200 KB are cut short however many times they are retried, most often at
+exactly 130,809 bytes. 41,247 of the 51,008 scans are above that point. It
+does honour range requests, so large images are fetched in 100 KB chunks and
+reassembled. The portal embeds these same image URLs, so a browser making an
+ordinary request renders only the top of the sheet. This is not a difficulty
+peculiar to bulk retrieval: it is how the archive's own viewer behaves on four
+fifths of the fond. It also returns HTTP 500 on roughly a third of requests
+while serving the same URL correctly on the next attempt, so retry logic must
+distinguish a temporary failure from a genuine absence. All 51,008 scans were
+retrieved and checked: every file is a structurally valid JPEG, none corrupt,
+and the directory tree matches the catalogue file for file.
 
-## 3. Dating
+## 4. Dating
 
-The portal carries an opening and closing date on every file's card. This field
-had not been collected, and a year appears in the file description itself for
-only 46 of the 2,019 files, so the fond could not be read as a chronology.
-Collecting it gives a date for 1,969 files, spanning 1878 to 1935 for the
-author's own work.
+The portal carries an opening and closing date on every file's card. This
+field had not been collected, and a year appears in the file description
+itself for only 46 of the 2,019 files, so the fond could not be read as a
+chronology. Collecting it gives a date for 1,969 files, spanning 1878 to 1935
+for the author's own work.
 
 Archivists mark a conjectural date, established from the contents rather than
 written by the author, by enclosing it in square brackets. 155 of the dated
@@ -125,20 +210,20 @@ The dating makes three things visible in the author's own work, opis 1.
 in the 1920s: 82% of a working life of nearly sixty years is contained in its
 last eighteen.
 
-**Late work shortens rather than stops.** The final four years, 1932–1935, hold
-40% of the files but only 27% of the sheets. Mean file length falls from 165
-sheets in the 1900s to 34 in the 1930s. The form changes from extended
+**Late work shortens rather than stops.** The final four years, 1932–1935,
+hold 40% of the files but only 27% of the sheets. Mean file length falls from
+165 sheets in the 1900s to 34 in the 1930s. The form changes from extended
 treatises to short notes.
 
-**Variant numbers are not chronological.** Some works are held as several files
-marked as the first and second variant. Of the four works held as a numbered
-pair, «Ступени человечества и преобразование земли» has its second variant
-dated 1 September 1920 and its first dated 19 October 1920, both dates firm and
-neither conjectural. The variant number in an archival description records the
-order in which the archivists arranged the material, not the order in which it
-was written, and it cannot be cited as evidence of priority.
+**Variant numbers are not chronological.** Some works are held as several
+files marked as the first and second variant. Of the four works held as a
+numbered pair, «Ступени человечества и преобразование земли» has its second
+variant dated 1 September 1920 and its first dated 19 October 1920, both dates
+firm and neither conjectural. The variant number in an archival description
+records the order in which the archivists arranged the material, not the order
+in which it was written, and it cannot be cited as evidence of priority.
 
-## 4. Page classification
+## 5. Page classification
 
 Which model should read a given scan depends on whether it carries handwriting
 or typescript, and at 51,008 scans that decision has to be automatic. The
@@ -153,8 +238,8 @@ measures as irregular. The classifier misassigned 29% of the fond and
 understated the share of typescript nearly threefold.
 
 Nothing in the metric revealed this. It surfaced only when a transcription was
-scored against a published edition and came out worse than comparable pages had
-scored earlier, which led back to the model routing and from there to the
+scored against a published edition and came out worse than comparable pages
+had scored earlier, which led back to the model routing and from there to the
 classifier.
 
 The replacement uses the variation in the lengths of ink runs along a line.
@@ -163,11 +248,11 @@ cursive letters join into strokes of markedly uneven length. The threshold is
 0.81, fitted to 19 pages labelled by hand, all of which it classifies
 correctly. Over the whole fond it gives:
 
-| Class | Scans | Share |
-| --- | ---: | ---: |
-| Handwritten | 34,903 | 68% |
-| Typewritten or printed | 14,585 | 29% |
-| Notes, covers, faded pages | 1,520 | 3% |
+| Class                      |  Scans | Share |
+|:---------------------------|-------:|------:|
+| Handwritten                | 34,903 |   68% |
+| Typewritten or printed     | 14,585 |   29% |
+| Notes, covers, faded pages |  1,520 |    3% |
 
 **These figures carry an error of roughly one sheet in five, and nineteen
 labels were far too few to see it.** Once part of the fond had been
@@ -180,14 +265,14 @@ fitting, the published rule is 80% accurate, where guessing the commoner class
 would give 54%.
 
 The errors run in both directions, and inspection settles which signal is
-right. A sheet the rule calls handwriting opens "ТРУДЫ О КОСМИЧЕСКОЙ РАКЕТЕ
-/1903-1927 г./" with typewriter slashes and a printed page number: carbon
-copies and faded typescript raise the variation in ink runs and are taken for a
-hand. A sheet it calls typescript carries pre-reform orthography, a struck-out
-word and an insertion in the margin. Refitting the threshold on 4,675 sheets
-instead of 19 moves it only from 0.81 to 0.827 and gains nothing, and no
-combination of two of the measured image features does better than the best
-one alone. The ceiling is in the image, not in the rule.
+right. A sheet the rule calls handwriting opens “ТРУДЫ О КОСМИЧЕСКОЙ РАКЕТЕ
+/1903-1927 г./” with typewriter slashes and a printed page number: carbon
+copies and faded typescript raise the variation in ink runs and are taken for
+a hand. A sheet it calls typescript carries pre-reform orthography, a
+struck-out word and an insertion in the margin. Refitting the threshold on
+4,675 sheets instead of 19 moves it only from 0.81 to 0.827 and gains nothing,
+and no combination of two of the measured image features does better than the
+best one alone. The ceiling is in the image, not in the rule.
 
 The composition figures above should be read with that error in mind, and the
 routing they drove sent about a fifth of sheets to the less suitable model.
@@ -196,45 +281,54 @@ hand-labelled pages can pass and still be wrong at scale, and what exposed it
 here was not a better image feature but a signal of a different kind, produced
 downstream by the reading itself.
 
-## 5. Transcription and measured accuracy
+## 6. Transcription and measured accuracy
 
 Transcription is performed page by page against a fixed instruction that
 requires uncertain readings to be marked `[?]`, unreadable passages
 `[неразборчиво]`, and authorial deletions preserved as struck-through text.
 Original orthography is kept, including pre-reform letters such as yat and
-fita, decimal i and the terminal hard sign ъ.
-The result is a machine transcription with its uncertainty visible, not a
-scholarly edition, and it has not been checked by hand against the scans.
+fita, decimal i and the terminal hard sign ъ. The result is a machine
+transcription with its uncertainty visible, not a scholarly edition, and it
+has not been checked by hand against the scans.
 
 The corpus now covers the fond in full: 2,019 archival files and 51,008 scans,
-carrying 299,939 uncertainty marks, about 6 per scan, and 36,446 passages struck
-out by the
-author. Only files transcribed in full are published: a partial transcription
-reads as a complete text with the middle silently missing, which is the worst
-kind of error an archival edition can carry.
+carrying 299,939 uncertainty marks, about 6 per scan, and 36,446 passages
+struck out by the author. Only files transcribed in full are published: a
+partial transcription reads as a complete text with the middle silently
+missing, which is the worst kind of error an archival edition can carry.
 
-The remaining 41,212 scans were read in a single overnight batch run, at a cost
-of about 39 US dollars. The model was chosen by measurement rather than by
-price list, on handwritten sheets scored against the typed copy of the same
-text, with the previous pipeline as the baseline on the same sheets; on typical
-hands no candidate clearly outran the rest. Agreement between two readings over
-the completed corpus matches what the part read by the earlier pipeline gave,
+The fond was read in two parts. The first 9,796 sheets, 19% of the fond, went
+through a pipeline driven by the Claude Code command line, with each sheet
+routed by the page classifier of Section 5: handwriting to Claude Opus, 6,916
+sheets, typescript and archivists' notes to Claude Sonnet, 2,880 sheets. The
+models were addressed by alias, so the exact point release is not recorded in
+the run logs.
+
+The remaining 41,212 sheets, 81% of the fond, were read overnight on 12 and 13
+August 2026 in 88 batch jobs, all on Gemini 3.5 Flash-Lite, at a cost of about
+39 US dollars. That model was not chosen from a price list: candidates were
+scored on handwritten sheets against the typed copy of the same text, with the
+previous pipeline as the baseline on the same sheets; on typical hands no
+candidate clearly outran the rest. Agreement between two readings over the
+completed corpus matches what the part read by the earlier pipeline gave,
 which is the check that the enlarged corpus is measuring the same thing.
 
 Accuracy is reported as a measured figure. Where a document in the fond
 corresponds to a text published on Russian Wikisource, the transcription is
-scored against it character by character and word by word.
+scored against it character by character and word by word. The two figures
+below were measured on the part read by the Claude pipeline; the completed
+corpus is checked separately against 17 published editions in Section 6.1.
 
 **Typescript.** File 33, sheets 014–015, a letter to a newspaper editor dated
 12 May 1905: 98.1% at character level, 91.7% at word level.
 
-**Handwriting.** File 150, an autograph article, against the text as printed in
-the journal *Vozdukhoplavanie* in 1924:
+**Handwriting.** File 150, an autograph article, against the text as printed
+in the journal *Vozdukhoplavanie* in 1924:
 
-| | Characters | Words |
-| --- | ---: | ---: |
-| As written | 77.7% | 47.5% |
-| Orthography folded onto modern | 81.1% | 73.7% |
+|                                | Characters | Words |
+|:-------------------------------|-----------:|------:|
+| As written                     |      77.7% | 47.5% |
+| Orthography folded onto modern |      81.1% | 73.7% |
 
 Both rows are needed. The published edition is modernised while the
 transcription preserves pre-reform spelling, so without folding every *полетъ*
@@ -248,13 +342,13 @@ corresponding to the manuscript, and for this fond such correspondences are
 rare. Of the 224 files in the corpus that carry both an autograph and a typed
 copy of one text, one has a published edition as well; a second such file was
 found elsewhere in the fond and transcribed for the purpose. Those two files
-are the ones that carry all three witnesses at once, an autograph, a typed copy
-and an edition, and Section 6 rests its validation on them. Correspondences to
-print of the simpler kind, a file against its publication, are taken up in
-Section 5.1; for everything else no ground truth exists at all, which is the
-problem the next section addresses.
+are the ones that carry all three witnesses at once, an autograph, a typed
+copy and an edition, and Section 7 rests its validation on them.
+Correspondences to print of the simpler kind, a file against its publication,
+are taken up in Section 6.1; for everything else no ground truth exists at
+all, which is the problem Section 7 addresses.
 
-### 5.1 The completed corpus against printed editions
+### 6.1 The completed corpus against printed editions
 
 With the fond transcribed in full, correspondences to print can be sought
 across the whole of it rather than case by case. File titles were matched
@@ -263,12 +357,12 @@ automatically against 70 texts of Tsiolkovsky available on Russian Wikisource;
 
 The results fall into two groups and must not be averaged. Where the archival
 file holds the redaction that was printed, 10 files, character accuracy is
-92.3%. Where the file holds a draft or working materials towards an article,
-7 files, agreement with the edition falls to 24%. The second figure is the
+92.3%. Where the file holds a draft or working materials towards an article, 7
+files, agreement with the edition falls to 24%. The second figure is the
 distance between a draft and its published form, not a reading error, and a
 mean over the two groups would describe neither.
 
-## 6. Measuring reading error without ground truth
+## 7. Measuring reading error without ground truth
 
 Evaluating handwritten text recognition in application, as opposed to
 development, is a recognised difficulty: the ground truth used to train and
@@ -276,29 +370,28 @@ test a model is not available for the material the model is then applied to,
 and compiling new ground truth by hand is expensive.
 
 Existing approaches to ground-truth-free evaluation work from intrinsic
-proxies for textual plausibility. Ströbel et al. (2022) compare lexicality
+proxies for textual plausibility. Ströbel et al. (2022) compare lexicality
 against a reference lexicon, character n-gram statistics and the perplexity of
 a masked language model, aimed principally at selecting the best of several
-models rather than at producing an absolute error rate. A second approach, described in
-the survey cited below, combines a semantic coherence score, region entropy
-divergence and a textual redundancy score for the same purpose on historical
-archives. All such proxies
-share a structural weakness: a fluent invention scores well, because nothing in
-the measurement has seen the page.
+models rather than at producing an absolute error rate. A second approach,
+described in the survey cited below, combines a semantic coherence score,
+region entropy divergence and a textual redundancy score for the same purpose
+on historical archives. All such proxies share a structural weakness: a fluent
+invention scores well, because nothing in the measurement has seen the page.
 
 A recent survey of OCR evaluation (Beyene and Dancy, 2026) records no method
 that draws its reference from the archive's own holdings. Text reuse across
 documents appears there as an object of study affected by recognition quality,
 not as a means of measuring it.
 
-Personal archives of the typewriter era offer a different signal, and one
-this survey of the literature did not find in use. Authors of this period frequently had their
-manuscripts typed, and archives commonly file the autograph and the typed copy
-of one text together. Where that is so, the archive contains a second,
-independent witness to the same words. Transcribing both and comparing the two
-transcriptions isolates the reading error exactly, because the source text and
-the recognition pipeline are identical and the only variable is how difficult
-the page is to read.
+Personal archives of the typewriter era offer a different signal, and one this
+survey of the literature did not find in use. Authors of this period
+frequently had their manuscripts typed, and archives commonly file the
+autograph and the typed copy of one text together. Where that is so, the
+archive contains a second, independent witness to the same words. Transcribing
+both and comparing the two transcriptions isolates the reading error exactly,
+because the source text and the recognition pipeline are identical and the
+only variable is how difficult the page is to read.
 
 Pairs are identified by content rather than by sheet number, since the
 manuscript and its copy are not necessarily adjacent: for each handwritten
@@ -306,7 +399,7 @@ sheet the typed sheet of greatest similarity is taken, and the pair is kept if
 similarity clears a low threshold.
 
 A sheet counts as handwritten only if its transcription is uncertain enough to
-have come from a hand, by the signal of Section 4. Without that filter the
+have come from a hand, by the signal of Section 5. Without that filter the
 measurement destroys itself: the classifier's misreadings put typescript on
 both sides of a pair, two typed readings agree almost perfectly, and the
 agreement figure is inflated by exactly the material it is meant to exclude.
@@ -319,28 +412,38 @@ long texts depends on long verbatim anchors.
 
 Over those pairs, two readings of one handwritten page agree on a median 37%
 of words, and the longest run on which they agree verbatim is a median of 10
-words; on 43% of pairs no run reaches ten words at all. Broken out by `ink_cv`,
-the classification feature of Section 4, the figures vary little across most of
-its range: 41%, 36%, 35% and 36% by quartile from the threshold upward, the
-first quartile standing apart and the rest level. Reading difficulty within
-handwriting is not predicted by how unmistakably handwritten the page looks.
+words; on 43% of pairs no run reaches ten words at all. Broken out by
+`ink_cv`, the classification feature of Section 5, the figures vary little
+across most of its range: 41%, 36%, 35% and 36% by quartile from the threshold
+upward, the first quartile standing apart and the rest level. Reading
+difficulty within handwriting is not predicted by how unmistakably handwritten
+the page looks.
 
-**The measurement is validated against ground truth where ground truth exists.**
-Two files carry an autograph, a typed copy of the same text and a published
-edition of it, so for the same page three quantities can be had at once: the
-accuracy of the handwritten reading against the edition, the accuracy of the
-typed reading against it, and the agreement of the two readings with each
-other, which is all the method has to work with elsewhere. Over 55 such pairs:
+<div class="samepage">
 
-| | Median |
-| --- | ---: |
-| agreement of the two readings, the estimate | 35% |
-| accuracy of the handwritten reading, the truth | 34% |
-| accuracy of the typed reading | 87% |
+**The measurement is validated against ground truth where ground truth
+exists.** Two files carry an autograph, a typed copy of the same text and a
+published edition of it, so for the same page three quantities can be had at
+once: the accuracy of the handwritten reading against the edition, the
+accuracy of the typed reading against it, and the agreement of the two
+readings with each other, which is all the method has to work with elsewhere.
+Over 55 such pairs:
+
+<div class="center">
+
+|                                                | Median |
+|:-----------------------------------------------|-------:|
+| agreement of the two readings, the estimate    |    35% |
+| accuracy of the handwritten reading, the truth |    34% |
+| accuracy of the typed reading                  |    87% |
+
+</div>
+
+</div>
 
 The estimate is unbiased to within a percentage point, and it ranks pages the
-way the truth does, at a rank correlation of 0.67 over all 55 pairs
-(t = 6.6, p < 0.001). Restricting to the pairs where the printed edition is
+way the truth does, at a rank correlation of 0.67 over all 55 pairs (t = 6.6,
+p \< 0.001). Restricting to the pairs where the printed edition is
 demonstrably a faithful witness to this archival copy, meaning the typed
 reading scores 85% or better against it, the correlation rises to 0.92 over 32
 pairs and to 0.97 over the 17 pairs above 90%, with no bias at all. The
@@ -349,10 +452,10 @@ where a published edition has been modernised or re-edited, it is not the same
 text as the file, and neither reading can match it.
 
 The method rests on the typed side being much the more reliable witness, which
-Section 5 puts at 98.1% on one document and which these files put at a median
+Section 6 puts at 98.1% on one document and which these files put at a median
 87% against editions that are themselves imperfect witnesses.
 
-### 6.1 Choosing a model without ground truth
+### 7.1 Choosing a model without ground truth
 
 Once the measure is validated it can be turned on the pipeline itself. Two
 thirds of this fond's sheets are routed to the more expensive of two models on
@@ -361,153 +464,217 @@ measured was typescript, where the two are level at 98.2% against 98.1%; on
 handwriting the assumption had never been tested, because testing it needs
 exactly the ground truth that does not exist.
 
-It does not need ground truth. 60 sheets that are unambiguously handwritten and
-have a typed copy of the same text in their file were read again by the cheaper
-model, and both readings were scored against that copy. On the 48 sheets where
-the comparison is well defined the stronger model wins on 37 and loses on 11
-(sign test p = 0.0001), by a median of 4.7 and a mean of 8.2 percentage points
-(paired t = 4.87, 47 d.f.), and by more than ten points on 29% of sheets.
+It does not need ground truth. 60 sheets that are unambiguously handwritten
+and have a typed copy of the same text in their file were read again by the
+cheaper model, and both readings were scored against that copy. On the 48
+sheets where the comparison is well defined the stronger model wins on 37 and
+loses on 11 (sign test p = 0.0001), by a median of 4.7 and a mean of 8.2
+percentage points (paired t = 4.87, 47 d.f.), and by more than ten points on
+29% of sheets.
 
-The assumption was right, and it was right by luck: nothing in the pipeline had
-established it. What is worth noting is the shape of the answer rather than its
-direction. Model selection without ground truth is the stated purpose of the
-proxy metrics of Ströbel et al. (2022); where an archive holds one text twice,
-the choice can be settled by measurement instead, at the cost of one pass of
-the cheaper model over a sample of sixty pages.
+The assumption was right, and it was right by luck: nothing in the pipeline
+had established it. What is worth noting is the shape of the answer rather
+than its direction. Model selection without ground truth is the stated purpose
+of the proxy metrics of Ströbel et al. (2022); where an archive holds one text
+twice, the choice can be settled by measurement instead, at the cost of one
+pass of the cheaper model over a sample of sixty pages.
 
-## 7. What agreement supports where difference does not
+## 8. What agreement supports where difference does not
 
 Matches and mismatches are not symmetrical in this material. A reading error
-destroys verbatim agreement and can hardly manufacture it, so in a corpus where
-differences cannot be trusted, as the next section shows they cannot, matches
+destroys verbatim agreement and can hardly manufacture it, so in a corpus
+where differences cannot be trusted, as Section 10 shows they cannot, matches
 still can be, and whatever is found is a lower bound rather than an estimate.
+In newspaper work the scale smooths that asymmetry; here each pair is a single
+datum that a person still has to confirm against the scan.
 
-Scanning the completed corpus for shared runs of twelve words returns 376 pairs
-of files with verbatim text in common, 353 of them filed under different
+Scanning the completed corpus for shared runs of twelve words returns 376
+pairs of files with verbatim text in common, 353 of them filed under different
 archival titles, which makes the connection invisible from the inventory.
 «Обратимость химических явлений» (opis 1, file 338) and «Земля и её энергия»
 (file 339), each about 29,000 words, share two thirds of their text.
-«Галилейский плотник» (file 438) and «Христианство. Оценка галилейского учителя
-Иисуса» (file 443) share a continuous passage of 170 words.
+«Галилейский плотник» (file 438) and «Христианство. Оценка галилейского
+учителя Иисуса» (file 443) share a continuous passage of 170 words.
 
-The method is not new and no novelty is claimed for it. The field is text reuse
-detection, with mature tools (Passim, TRACER, Tesserae) and its own literature,
-in which n-gram shingling is standard and robustness to recognition noise has
-been studied. What is new here is the application to this fond and the measured
-bound underneath it: in material of this kind the reading quality is normally
-unknown, and here it has been measured. No comparison against an established
-tool on the same corpus has been run, and that is recorded among the
-limitations.
+The method is not new and no novelty is claimed for it. The field is text
+reuse detection, with mature tools (Passim, TRACER, Tesserae) and its own
+literature, in which n-gram shingling is standard and robustness to
+recognition noise has been studied (Smith, Cordell, and Dillon 2013; Büchler
+et al. 2014). What is new here is the application to this fond and the
+measured bound underneath it: in material of this kind the reading quality is
+normally unknown, and here it has been measured. No comparison against an
+established tool on the same corpus has been run, and that is recorded among
+the limitations.
 
-## 8. What the corpus does not support
+## 9. What such links mean for the inventory
+
+An inventory records what a file is called and when it was written, not what
+it repeats. A reader who asks for one of the two files named in Section 8 has
+no way to learn from its description that two thirds of that text is also
+filed under an unrelated title.
+
+Such links are better published beside the inventory than inside it. A
+machine-found overlap is a hypothesis, not a statement of provenance: these
+matches were found by twelve-word shingles over a machine reading that no
+person has checked against the scans. The useful property is that each pair
+points at the exact shared passages, so verifying one takes minutes rather
+than hours. The position taken here is that an archive should promote into its
+own description only what a person has confirmed, and that the list of 376
+pairs is published so that anyone can start the checking.
+
+## 10. What the corpus does not support
 
 The fond holds one work, «Космический корабль», in two variants, files 46 and
-47, described by the archive as the first and second variant. Two redactions of
-one conception are exactly the material for a text-critical comparison, showing
-what the author added, dropped and rephrased where published editions show only
-what survived.
+47, described by the archive as the first and second variant. Two redactions
+of one conception are exactly the material for a text-critical comparison,
+showing what the author added, dropped and rephrased where published editions
+show only what survived.
 
 The comparison cannot be made at this recognition quality, and the measurement
-of Section 6 is what establishes that. An end-to-end word alignment of the two
+of Section 7 is what establishes that. An end-to-end word alignment of the two
 redactions finds 19% of words in common. That figure is below the 32% median
 agreement measured between two readings of a single page in file 46 itself.
 Whatever separates the two redactions is therefore smaller than what separates
 two readings of one and the same page, and no procedure can distinguish an
 authorial revision from a misreading on this evidence.
 
-A first attempt at the comparison, made before the floor was measured, produced
-a confident-looking table of 89 differences. Inspection showed the alignment had
-matched 4 words of one redaction against 1,877 of the other and labelled the
-result a rewritten passage. The tool now reads the measured floor from the
-calibration and reports nothing when the observed similarity fails to clear it,
-so that a spurious result cannot be produced by running it.
+A first attempt at the comparison, made before the floor was measured,
+produced a confident-looking table of 89 differences. Inspection showed the
+alignment had matched 4 words of one redaction against 1,877 of the other and
+labelled the result a rewritten passage. The tool now reads the measured floor
+from the calibration and reports nothing when the observed similarity fails to
+clear it, so that a spurious result cannot be produced by running it.
 
-The negative result is the useful one here. A corpus of this
-accuracy carries the substance of a page reliably and supports search,
-classification, dating and description at scale. It does not support word-level
-collation of two manuscripts against each other, and a reader of the corpus has
-no way to know that from the transcriptions themselves.
+The negative result is the useful one here. A corpus of this accuracy carries
+the substance of a page reliably and supports search, classification, dating
+and description at scale. It does not support word-level collation of two
+manuscripts against each other, and a reader of the corpus has no way to know
+that from the transcriptions themselves.
 
-## 9. The state of the corpus these figures describe
+## 11. The state of the corpus these figures describe
 
-The corpus is complete, so the figures above are settled quantities rather than
-a snapshot of work in progress. `check_paper.py` recomputes twenty of them from
-the released files and reports any that no longer agree; the source of this
-paper was passed through it before submission. It was written after the abstract
-was found to say 36% where Section 6 said 37%, a figure that had been correct
-when it was typed and had not been updated when the corpus grew; a stale number
-in one place is worse than a missing one, because a reader who checks it has no
-way to know which of the two to believe.
+The corpus is complete, so the figures above are settled quantities rather
+than a snapshot of work in progress. `check_paper.py` recomputes twenty of
+them from the released files and reports any that no longer agree; the source
+of this paper was passed through it before submission. It was written after
+the abstract was found to say 36% where Section 7 said 37%, a figure that had
+been correct when it was typed and had not been updated when the corpus grew;
+a stale number in one place is worse than a missing one, because a reader who
+checks it has no way to know which of the two to believe.
 
-Two defects in the counting were published before they were found, and both are
-recorded here because they show how the corpus counts itself. On 236 scans the
-model looped, repeating a single markup line up to 635 times; each repeat was
-counted as an uncertainty mark and inflated the published total by 6,189. No
-statistical check caught it, since 236 scans out of 51,008 move no distribution;
-it was found by a human opening a file. Separately, the markup legend carried in
-the header of every transcribed file contains examples of the marks themselves,
-which the counter took for real ones: one struck passage and two doubts per
-file, 2,019 and 4,038 across the fond. The totals published along the way,
-310,166 and 303,977, are corrected to the 299,939 reported above; loops are
-collapsed and marked explicitly in the released files.
+Two defects in the counting were published before they were found, and both
+are recorded here because they show how the corpus counts itself. On 236 scans
+the model looped, repeating a single markup line up to 635 times; each repeat
+was counted as an uncertainty mark and inflated the published total by 6,189.
+No statistical check caught it, since 236 scans out of 51,008 move no
+distribution; it was found by a human opening a file. Separately, the markup
+legend carried in the header of every transcribed file contains examples of
+the marks themselves, which the counter took for real ones: one struck passage
+and two doubts per file, 2,019 and 4,038 across the fond. The totals published
+along the way, 310,166 and 303,977, are corrected to the 299,939 reported
+above; loops are collapsed and marked explicitly in the released files.
 
-## 10. Availability
+## 12. Conclusion
 
-The catalogue is released under CC0 and the code under the MIT licence, from a
-public repository with a persistent identifier. Datasets comprise the catalogue
-of all 2,019 files, the dating of 1,969 of them, the page classification of all
-51,008 scans, the hand-labelled validation set, the calibration pairs, and
-the transcription corpus, now complete for the fond.
+Where an archive filed the same text twice, once in the author's hand and once
+typed, it can measure how well a machine reads its own handwriting without any
+human transcript. For fond 555 that measurement says what the result is good
+for: two readings of a single handwritten page agree on 37% of words, so the
+corpus is a finding aid and not an edition.
 
-The scans themselves are not redistributed. They are produced and hosted by the
-Archive of the Russian Academy of Sciences and remain the archive's to publish;
-the retrieval code obtains them from the source, one request at a time with a
-pause between requests.
+## 13. Availability
 
-## 11. Limitations
+The catalogue is released under CC0 and the code under the MIT licence, from
+<https://github.com/beskvladimir-create/tsiolkovsky-papers>, archived at
+Zenodo, DOI `10.5281/zenodo.21705221`. Datasets comprise the catalogue of all
+2,019 files, the dating of 1,969 of them, the page classification of all
+51,008 scans, the hand-labelled validation set, the calibration pairs, and the
+transcription corpus, now complete for the fond.
 
-The transcriptions are machine output with uncertainty marked and have not been
-verified against the scans by hand, on any page of the fond. The two accuracy
-figures of Section 5 rest on one document each, which is what the availability of published counterparts allows,
-and should be read as indicative rather than as an error rate for the fond.
+The scans themselves are not redistributed. They are produced and hosted by
+the Archive of the Russian Academy of Sciences and remain the archive's to
+publish; the retrieval code obtains them from the source, one request at a
+time with a pause between requests.
 
-The calibration of Section 6 measures agreement between two readings, not error
-against truth; where both readings fail in the same way, the agreement figure
-will be optimistic. Its validation rests on two files and 55 pairs, which is
-enough to establish that the estimate tracks the truth and not enough to fix
-the size of any residual bias across hands and periods.
+## 14. Limitations
 
-The page classification is about 80% accurate against the reading-based signal,
-and the composition figures of Section 4 inherit that error. The filter that
-separates genuine handwriting for the calibration uses the same reading-based
-signal, which is now available for the whole fond; the image feature is what
-drives the routing at read time, so about a fifth of sheets were read by the
-less suitable model.
+The transcriptions are machine output with uncertainty marked and have not
+been verified against the scans by hand, on any page of the fond. The two
+accuracy figures of Section 6 rest on one document each, which is what the
+availability of published counterparts allows, and should be read as
+indicative rather than as an error rate for the fond.
+
+The calibration of Section 7 measures agreement between two readings, not
+error against truth; where both readings fail in the same way, the agreement
+figure will be optimistic. Its validation rests on two files and 55 pairs,
+which is enough to establish that the estimate tracks the truth and not enough
+to fix the size of any residual bias across hands and periods.
+
+The page classification is about 80% accurate against the reading-based
+signal, and the composition figures of Section 5 inherit that error. The
+filter that separates genuine handwriting for the calibration uses the same
+reading-based signal, which is now available for the whole fond; the image
+feature is what drives the routing at read time, so about a fifth of sheets
+were read by the less suitable model.
 
 The dating is the archive's own and inherits whatever errors the original
 description contains; the conjectural-dating flag records where the archivists
 themselves signalled uncertainty, but not where they were wrong.
 
-Two scans cannot be read by the pipeline at all: a German typescript review of
-1927 of one of Tsiolkovsky's brochures, which trips a filter against verbatim
-reproduction of known printed text. They were read separately, in strips and by
-hand from the scan, and are flagged as such in the corpus.
+Two scans cannot be read by the pipeline as whole pages: sheets 014 and 015 of
+file 340 in opis 4, a letter from the engineer Robert Lademann enclosing a
+German typescript review of Tsiolkovsky's 1927 brochure on reaction-propelled
+craft. The model refuses the sheet whole, returning a recitation stop, because
+the text it is asked to reproduce is printed matter it recognises. The two
+sheets were read in strips by the same model and finished from the scan by
+hand, and the corpus carries a note on the sheet saying so.
 
 No comparison against an established text-reuse tool has been run on this
-corpus, so the map of repeats in Section 7 is reported as an application to this
-fond and not as a claim about method.
+corpus, so the map of repeats in Section 8 is reported as an application to
+this fond and not as a claim about method.
 
-The wider comparison against printed editions in Section 5.1 rests on 17 files
+The wider comparison against printed editions in Section 6.1 rests on 17 files
 whose text also survives in print, matched to their publications automatically
 by title; it should be read as indicative rather than as an error rate for the
 fond.
 
-## References
+## 15. References
 
 Beyene, F. S., & Dancy, C. L. (2026). A Survey of OCR Evaluation Methods and
 Metrics and the Invisibility of Historical Documents. arXiv:2603.25761.
 
-Ströbel, P. B., Clematide, S., Volk, M., Schwitter, R., Hodel, T., & Schoch, D.
-(2022). Evaluation of HTR models without Ground Truth Material. *Proceedings of
-the 13th Conference on Language Resources and Evaluation (LREC 2022)*,
-4395–4404. arXiv:2201.06170.
+Büchler, M., Burns, P. R., Müller, M., Franzini, E., & Franzini, G. (2014).
+Towards a Historical Text Re-use Detection. In *Text Mining: From Ontology
+Learning to Automated Text Processing Applications* (pp. 221–238). Springer.
+https://doi.org/10.1007/978-3-319-12655-5_11
+
+Hill, M. J., & Hengchen, S. (2019). Quantifying the Impact of Dirty OCR on
+Historical Text Analysis: Eighteenth Century Collections Online as a Case
+Study. *Digital Scholarship in the Humanities*, 34(4), 825–843.
+https://doi.org/10.1093/llc/fqz024
+
+Muehlberger, G., Seaward, L., Terras, M., et al. (2019). Transforming
+Scholarship in the Archives through Handwritten Text Recognition: Transkribus
+as a Case Study. *Journal of Documentation*, 75(5), 954–976.
+https://doi.org/10.1108/JD-07-2018-0114
+
+Nockels, J., Gooding, P., Ames, S., & Terras, M. (2022). Understanding the
+Application of Handwritten Text Recognition Technology in Heritage Contexts: A
+Systematic Review of Transkribus in Published Research. *Archival Science*,
+22(3), 367–392. https://doi.org/10.1007/s10502-021-09397-6
+
+Smith, D. A., Cordell, R., & Dillon, E. M. (2013). Infectious Texts: Modeling
+Text Reuse in Nineteenth-Century Newspapers. In *Proceedings of the 2013 IEEE
+International Conference on Big Data* (pp. 86–94).
+https://doi.org/10.1109/BigData.2013.6691675
+
+Ströbel, P. B., Clematide, S., Volk, M., Schwitter, R., Hodel, T., & Schoch,
+D. (2022). Evaluation of HTR Models without Ground Truth Material. In
+*Proceedings of the 13th Conference on Language Resources and Evaluation (LREC
+2022)* (pp. 4395–4404). arXiv:2201.06170.
+
+van Strien, D., Beelen, K., Coll Ardanuy, M., Hosseini, K., McGillivray, B., &
+Colavizza, G. (2020). Assessing the Impact of OCR Quality on Downstream NLP
+Tasks. In *Proceedings of the 12th International Conference on Agents and
+Artificial Intelligence* (pp. 484–496).
+https://doi.org/10.5220/0009169004840496
